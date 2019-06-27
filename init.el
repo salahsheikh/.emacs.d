@@ -53,13 +53,12 @@
 (eval-when-compile
   (require 'use-package))
 
-(use-package evil
-:ensure t
+(use-package evil :ensure t
 :config
 (evil-mode 1))
 
-(use-package helm
-  :ensure t
+(use-package helm :ensure t
+  :defer 2
   :init
   (setq helm-M-x-fuzzy-match t
 	helm-mode-fuzzy-match t
@@ -87,16 +86,13 @@
 )
 
 ;; fuzzier matching for helm
-(use-package helm-flx
-  :ensure t
+(use-package helm-flx :ensure t
   :after helm
   :config
   (helm-flx-mode +1))
 
-
-
-(use-package swiper-helm
-  :ensure t
+(use-package swiper-helm :ensure t
+  :defer 2
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer)
@@ -134,8 +130,8 @@
   :config
   (load-theme 'intellij t))
 
-(use-package diminish
-  :ensure t)
+(use-package diminish :ensure t
+  :defer 2)
 (eval-after-load "helm" '(diminish 'helm-mode))
 (eval-after-load "company" '(diminish 'company-mode))
 (eval-after-load "subword" '(diminish 'subword-mode))
@@ -156,9 +152,9 @@
   :config
   (drag-stuff-global-mode))
 
-(use-package vi-tilde-fringe
-  :init (global-vi-tilde-fringe-mode t)
-:ensure t)
+(use-package vi-tilde-fringe :ensure t
+  :defer 2
+  :init (global-vi-tilde-fringe-mode t))
 
 (use-package highlight-indentation
   :diminish highlight-indentation-mode
@@ -170,16 +166,40 @@
   :ensure t)
 (add-hook 'prog-mode-hook #'highlight-indentation-mode)
 
+(use-package avy :ensure t
+  :defer 4
+  :config
+  (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
+  (define-key evil-normal-state-map "gl" 'evil-avy-goto-line)
+  (define-key evil-motion-state-map "gc" 'evil-avy-goto-char)
+  (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
+  (setq avy-background t))
+
+(use-package diff-hl
+  :defer 4
+  :ensure t
+  :config
+  (custom-set-faces
+  '(diff-hl-change ((t (:background "#3a81c3"))))
+  '(diff-hl-insert ((t (:background "#7ccd7c"))))
+  '(diff-hl-delete ((t (:background "#ee6363")))))
+  (global-diff-hl-mode)
+  (diff-hl-flydiff-mode))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(highlight-indentation-blank-lines t)
- '(package-selected-packages (quote (helm use-package evil))))
+ '(package-selected-packages
+   (quote
+    (avy vi-tilde-fringe use-package swiper-helm intellij-theme highlight-indentation helm-flx evil drag-stuff diminish)))
+ '(show-paren-delay 0)
+ '(show-paren-priority -50))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(show-paren-match ((t (:background "#497FAB" :foreground "white smoke"))))
+ '(show-paren-match-expression ((t (:background "#497FAB")))))

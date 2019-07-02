@@ -57,8 +57,7 @@
 :config
 (evil-mode 1))
 
-(use-package helm :ensure t
-  :defer 2
+(use-package helm :ensure t :defer 2
   :init
   (setq helm-M-x-fuzzy-match t
 	helm-mode-fuzzy-match t
@@ -91,8 +90,7 @@
   :config
   (helm-flx-mode +1))
 
-(use-package swiper-helm :ensure t
-  :defer 2
+(use-package swiper-helm :ensure t :defer 2
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer)
@@ -114,6 +112,12 @@
 ;;; built-in packages
 (use-package paren
   :config
+  (custom-set-faces
+  '(show-paren-match ((t (:background "#497FAB" :foreground "white smoke"))))
+  '(show-paren-match-expression ((t (:background "#497FAB")))))
+
+  (setq show-paren-delay 0)
+  (setq show-paren-priority -50)
   (show-paren-mode +1))
 
 (use-package elec-pair
@@ -125,13 +129,12 @@
   :config
 (global-hl-line-mode +1))
 
-(use-package intellij-theme
-  :ensure t
+(use-package intellij-theme :ensure t
   :config
   (load-theme 'intellij t))
 
-(use-package diminish :ensure t
-  :defer 2)
+(use-package diminish :ensure t :defer 2)
+
 (eval-after-load "helm" '(diminish 'helm-mode))
 (eval-after-load "company" '(diminish 'company-mode))
 (eval-after-load "subword" '(diminish 'subword-mode))
@@ -144,30 +147,26 @@
     (setq mode-name "el"))) 
 
 ;; Moves selected region around.
-(use-package drag-stuff
-  :ensure t
+(use-package drag-stuff :ensure t :defer 2
   :diminish drag-stuff-mode
   :bind (("M-<down>" . drag-stuff-down)
          ("M-<up>" . drag-stuff-up))
   :config
   (drag-stuff-global-mode))
 
-(use-package vi-tilde-fringe :ensure t
-  :defer 2
+(use-package vi-tilde-fringe :ensure t :defer 2
   :init (global-vi-tilde-fringe-mode t))
 
-(use-package highlight-indentation
+(use-package highlight-indentation :ensure t :defer 2
   :diminish highlight-indentation-mode
   :diminish highlight-indentation-current-column-mode
-  :init (require 'highlight-indentation)
   :config
   (set-face-background 'highlight-indentation-face "#e3e3d3")
   (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
-  :ensure t)
-(add-hook 'prog-mode-hook #'highlight-indentation-mode)
+  (add-hook 'prog-mode-hook #'highlight-indentation-mode))
 
-(use-package avy :ensure t
-  :defer 4
+(use-package avy :ensure t :defer 4
+  :requires evil
   :config
   (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
   (define-key evil-normal-state-map "gl" 'evil-avy-goto-line)
@@ -175,9 +174,7 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package diff-hl
-  :defer 4
-  :ensure t
+(use-package diff-hl :ensure t :defer 4
   :config
   (custom-set-faces
   '(diff-hl-change ((t (:background "#3a81c3"))))
@@ -186,20 +183,21 @@
   (global-diff-hl-mode)
   (diff-hl-flydiff-mode))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (avy vi-tilde-fringe use-package swiper-helm intellij-theme highlight-indentation helm-flx evil drag-stuff diminish)))
- '(show-paren-delay 0)
- '(show-paren-priority -50))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(show-paren-match ((t (:background "#497FAB" :foreground "white smoke"))))
- '(show-paren-match-expression ((t (:background "#497FAB")))))
+(use-package yasnippet :ensure t :defer 8
+  :requires yasnippet-snippets
+  :config
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets :ensure t
+  :after yasnippet)
+
+(use-package company :ensure t :defer 8
+  :config
+  (add-to-list 'company-backends 'company-yasnippet)
+  (setq company-idle-delay 0)
+  (setq company-show-numbers t)
+  (setq company-minimum-prefix-length 1)
+  (global-company-mode))
+
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file 'noerror)

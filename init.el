@@ -194,10 +194,38 @@
 (use-package company :ensure t :defer 8
   :config
   (add-to-list 'company-backends 'company-yasnippet)
-  (setq company-idle-delay 0)
+  (setq company-idle-delay 0.25)
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1)
   (global-company-mode))
+
+(global-prettify-symbols-mode)
+(setq prettify-symbols-unprettify-at-point 'right-edge)
+(setq inhibit-compacting-font-caches t)
+(add-hook 'prog-mode-hook
+        (lambda ()
+            (push '("lambda" . ?λ) prettify-symbols-alist)
+            (push '("->" . ?→) prettify-symbols-alist)
+            (push '("=>" . ?⇒) prettify-symbols-alist)
+            (push '("!=" . ?≠) prettify-symbols-alist)
+            (push '("==" . ?≡) prettify-symbols-alist)
+            (push '("<=" . ?≤) prettify-symbols-alist)
+            (push '(">=" . ?≥) prettify-symbols-alist)
+            (push '("pi". ?π) prettify-symbols-alist)
+            (push '("&&" . ?∧) prettify-symbols-alist)
+            (push '("||" . ?∨) prettify-symbols-alist)))
+
+(add-hook 'python-mode-hook
+        (lambda ()
+            (push '("def"    . ?ƒ) prettify-symbols-alist)
+            (push '("sum"    . ?Σ) prettify-symbols-alist)
+            (push '("**2"    . ?²) prettify-symbols-alist)
+            (push '("**3"    . ?³) prettify-symbols-alist)
+            (push '("None"   . ?∅) prettify-symbols-alist)
+            (push '("in"     . ?∈) prettify-symbols-alist)
+            (push '("not in" . ?∉) prettify-symbols-alist)
+            (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
+            ))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

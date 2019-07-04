@@ -1,3 +1,20 @@
+(setq gc-cons-threshold-original gc-cons-threshold)
+(setq gc-cons-threshold (* 1024 1024 100))
+
+(setq file-name-handler-alist-original file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
+(run-with-idle-timer
+ 5 nil
+ (lambda ()
+   (setq gc-cons-threshold gc-cons-threshold-original)
+   (setq file-name-handler-alist file-name-handler-alist-original)
+   (makunbound 'gc-cons-threshold-original)
+   (makunbound 'file-name-handler-alist-original)
+   (message "gc-cons-threshold and file-name-handler-alist restored")))
+
+(setq load-prefer-newer t)
+
 (set-face-attribute 'default nil
                     :family "DeJaVu Sans Mono"
                     :height 90
@@ -54,8 +71,18 @@
   (require 'use-package))
 
 (use-package evil :ensure t
-:config
-(evil-mode 1))
+  :init
+  (setq evil-want-integration t) 
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-mode 1))
+
+(use-package evil-collection
+  :after evil
+  :requires evil
+  :ensure t
+  :config
+  (evil-collection-init))
 
 (use-package helm :ensure t :defer 2
   :init
@@ -127,7 +154,7 @@
 ;; highlight the current line
 (use-package hl-line
   :config
-(global-hl-line-mode +1))
+  (global-hl-line-mode +1))
 
 (use-package intellij-theme :ensure t
   :config
@@ -226,6 +253,8 @@
             (push '("not in" . ?∉) prettify-symbols-alist)
             (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
             ))
+
+(use-package magit :ensure t :defer 8)
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

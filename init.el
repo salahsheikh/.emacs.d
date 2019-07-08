@@ -247,7 +247,15 @@
             (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
             ))
 
-(use-package magit :ensure t :defer 8)
+(use-package magit :ensure t :defer 8
+  :init
+  (define-key evil-normal-state-map "gs" 'magit-status))
+
+(use-package evil-magit :ensure t :defer 8
+  :requires magit
+  :after magit
+  :config
+  (evil-magit-init))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

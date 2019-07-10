@@ -8,6 +8,12 @@
 
 (setq load-prefer-newer t)
 
+(setq initial-frame-alist
+      '(
+        (width . 90) ; character
+        (height . 50) ; lines
+        ))
+
 (set-face-attribute 'default nil
                     :family "DeJaVu Sans Mono"
                     :height 90
@@ -25,6 +31,10 @@
 (line-number-mode t)
 (column-number-mode t)
 (size-indication-mode t)
+
+(set-default 'truncate-lines nil)
+(add-hook 'prog-mode-hook #'toggle-truncate-lines)
+
 (setq frame-resize-pixelwise t)
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -194,14 +204,31 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package diff-hl :ensure t :defer 4
+;; (use-package diff-hl :ensure t :defer 4
+;;   :config
+;;   (custom-set-faces
+;;   '(diff-hl-change ((t (:background "#3a81c3"))))
+;;   '(diff-hl-insert ((t (:background "#7ccd7c"))))
+;;   '(diff-hl-delete ((t (:background "#ee6363")))))
+;;   (global-diff-hl-mode)
+;;   (diff-hl-flydiff-mode))
+
+(use-package git-gutter
+  :ensure t
+  :diminish git-gutter-mode
+  :config (global-git-gutter-mode)
+  :init
+  (progn
+    (setq git-gutter:separator-sign " "
+          git-gutter:lighter " GG"))
   :config
-  (custom-set-faces
-  '(diff-hl-change ((t (:background "#3a81c3"))))
-  '(diff-hl-insert ((t (:background "#7ccd7c"))))
-  '(diff-hl-delete ((t (:background "#ee6363")))))
-  (global-diff-hl-mode)
-  (diff-hl-flydiff-mode))
+  (progn
+    (set-face-background 'git-gutter:deleted "#990A1B")
+    (set-face-foreground 'git-gutter:deleted "#990A1B")
+    (set-face-background 'git-gutter:modified "#00736F")
+    (set-face-foreground 'git-gutter:modified "#00736F")
+    (set-face-background 'git-gutter:added "#546E00")
+    (set-face-foreground 'git-gutter:added "#546E00")))
 
 (use-package yasnippet :ensure t :defer 8
   :requires yasnippet-snippets
@@ -253,6 +280,16 @@
 
 (use-package evil-magit :ensure t :defer 8
   :after magit)
+
+(use-package lsp-mode :ensure t :defer 8
+  :config
+  ;;; Enable lsp in all programming modes
+  (require 'lsp-clients)
+  (add-hook 'prog-mode-hook 'lsp)
+
+  ;;; Additional lsp-related packages
+  (use-package company-lsp)
+  (use-package lsp-ui))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

@@ -8,9 +8,7 @@
 
 (setq load-prefer-newer t)
 
-(setq initial-frame-alist
-      '(
-        (width . 90) ; character
+(setq initial-frame-alist '((width . 90) ; character
         (height . 50) ; lines
         ))
 
@@ -204,31 +202,21 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-;; (use-package diff-hl :ensure t :defer 4
-;;   :config
-;;   (custom-set-faces
-;;   '(diff-hl-change ((t (:background "#3a81c3"))))
-;;   '(diff-hl-insert ((t (:background "#7ccd7c"))))
-;;   '(diff-hl-delete ((t (:background "#ee6363")))))
-;;   (global-diff-hl-mode)
-;;   (diff-hl-flydiff-mode))
-
 (use-package git-gutter
   :ensure t
   :diminish git-gutter-mode
   :config (global-git-gutter-mode)
-  :init
-  (progn
-    (setq git-gutter:separator-sign " "
-          git-gutter:lighter " GG"))
   :config
+  (custom-set-variables
+   '(git-gutter:modified-sign " ") ;; two space
+   '(git-gutter:added-sign " ")    ;; multiple character is OK
+   '(git-gutter:deleted-sign " "))
+  (custom-set-variables
+   '(git-gutter:update-interval 0.2))
   (progn
-    (set-face-background 'git-gutter:deleted "#990A1B")
-    (set-face-foreground 'git-gutter:deleted "#990A1B")
-    (set-face-background 'git-gutter:modified "#00736F")
-    (set-face-foreground 'git-gutter:modified "#00736F")
-    (set-face-background 'git-gutter:added "#546E00")
-    (set-face-foreground 'git-gutter:added "#546E00")))
+    (set-face-background 'git-gutter:deleted "#f2bfb6")
+    (set-face-background 'git-gutter:modified "#c3d6e8")
+    (set-face-background 'git-gutter:added "#c9dec1")))
 
 (use-package yasnippet :ensure t :defer 8
   :requires yasnippet-snippets

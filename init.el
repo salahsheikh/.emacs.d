@@ -202,14 +202,14 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package git-gutter
-  :ensure t
+(use-package git-gutter :ensure t :defer 8
   :diminish git-gutter-mode
   :config (global-git-gutter-mode)
   :config
+  ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
-   '(git-gutter:modified-sign " ") ;; two space
-   '(git-gutter:added-sign " ")    ;; multiple character is OK
+   '(git-gutter:modified-sign " ") 
+   '(git-gutter:added-sign " ")   
    '(git-gutter:deleted-sign " "))
   (custom-set-variables
    '(git-gutter:update-interval 0.2))
@@ -217,14 +217,6 @@
     (set-face-background 'git-gutter:deleted "#f2bfb6")
     (set-face-background 'git-gutter:modified "#c3d6e8")
     (set-face-background 'git-gutter:added "#c9dec1")))
-
-(use-package yasnippet :ensure t :defer 8
-  :requires yasnippet-snippets
-  :config
-  (yas-global-mode 1))
-
-(use-package yasnippet-snippets :ensure t
-  :after yasnippet)
 
 (use-package company :ensure t :defer 8
   :config
@@ -269,15 +261,28 @@
 (use-package evil-magit :ensure t :defer 8
   :after magit)
 
-(use-package lsp-mode :ensure t :defer 8
+(use-package yasnippet :ensure t :defer 4
+  :after evil-magit
+  :requires yasnippet-snippets
   :config
-  ;;; Enable lsp in all programming modes
-  (require 'lsp-clients)
-  (add-hook 'prog-mode-hook 'lsp)
+  (yas-global-model 1))
 
-  ;;; Additional lsp-related packages
-  (use-package company-lsp)
-  (use-package lsp-ui))
+(use-package yasnippet-snippets :ensure t
+  :after yasnippet)
+
+(use-package lsp-mode :ensure t :defer 6
+  :config
+  (add-hook 'python-mode-hook #'lsp-deferred))
+
+(use-package company-lsp
+  :after lsp-mode
+  :config
+  (push 'company-lsp company-backends))
+
+(use-package lsp-ui :ensure t
+  :after lsp-mode
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

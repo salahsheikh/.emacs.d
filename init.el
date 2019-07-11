@@ -157,9 +157,9 @@
   :config
   (global-hl-line-mode +1))
 
-(use-package intellij-theme :ensure t
-  :config
-  (load-theme 'intellij t))
+(use-package spacemacs-theme
+  :defer t
+  :init (load-theme 'spacemacs-light t))
 
 (use-package diminish :ensure t :defer 2)
 
@@ -181,9 +181,6 @@
          ("M-<up>" . drag-stuff-up))
   :config
   (drag-stuff-global-mode))
-
-(use-package vi-tilde-fringe :ensure t :defer 2
-  :init (global-vi-tilde-fringe-mode t))
 
 (use-package highlight-indentation :ensure t :defer 2
   :diminish highlight-indentation-mode
@@ -221,7 +218,7 @@
 (use-package company :ensure t :defer 8
   :config
   (add-to-list 'company-backends 'company-yasnippet)
-  (setq company-idle-delay 0.25)
+  (setq company-idle-delay 0.2)
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1)
   (global-company-mode))
@@ -261,22 +258,22 @@
 (use-package evil-magit :ensure t :defer 8
   :after magit)
 
-(use-package yasnippet :ensure t :defer 4
-  :after evil-magit
-  :requires yasnippet-snippets
+(use-package yasnippet :ensure t 
   :config
-  (yas-global-model 1))
+  (yas-global-mode 1))
 
 (use-package yasnippet-snippets :ensure t
   :after yasnippet)
 
-(use-package lsp-mode :ensure t :defer 6
+(use-package lsp-mode :ensure t
+  :requires yasnippet
   :config
   (add-hook 'python-mode-hook #'lsp-deferred))
 
-(use-package company-lsp
+(use-package company-lsp :ensure t
   :after lsp-mode
   :config
+  (setq company-lsp-enable-snippet t)
   (push 'company-lsp company-backends))
 
 (use-package lsp-ui :ensure t

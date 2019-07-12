@@ -30,6 +30,7 @@
 (column-number-mode t)
 (size-indication-mode t)
 
+
 (set-default 'truncate-lines nil)
 (add-hook 'prog-mode-hook #'toggle-truncate-lines)
 
@@ -199,9 +200,7 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package git-gutter :ensure t :defer 8
-  :diminish git-gutter-mode
-  :config (global-git-gutter-mode)
+(use-package git-gutter :ensure t :defer 2
   :config
   ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
@@ -209,13 +208,18 @@
    '(git-gutter:added-sign " ")   
    '(git-gutter:deleted-sign " "))
   (custom-set-variables
-   '(git-gutter:update-interval 0.2))
+   '(git-gutter:update-interval 0.2)
+   '(git-gutter:hide-gutter t)
+   )
   (progn
     (set-face-background 'git-gutter:deleted "#f2bfb6")
     (set-face-background 'git-gutter:modified "#c3d6e8")
-    (set-face-background 'git-gutter:added "#c9dec1")))
+    (set-face-background 'git-gutter:added "#c9dec1"))
+  (global-git-gutter-mode))
 
-(use-package company :ensure t :defer 8
+(set-fringe-style nil)
+
+(use-package company :ensure t :defer 2
   :config
   (add-to-list 'company-backends 'company-yasnippet)
   (setq company-idle-delay 0.2)
@@ -268,7 +272,7 @@
 (use-package lsp-mode :ensure t
   :requires yasnippet
   :config
-  (add-hook 'python-mode-hook #'lsp-deferred))
+  (add-hook 'python-mode-hook #'lsp))
 
 (use-package company-lsp :ensure t
   :after lsp-mode
@@ -279,6 +283,7 @@
 (use-package lsp-ui :ensure t
   :after lsp-mode
   :config
+  (lsp-ui-doc-enable nil)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (setq custom-file "~/.emacs.d/custom.el")

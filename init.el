@@ -59,6 +59,11 @@
 (set-language-environment 'utf-8)
 (setq locale-coding-system 'utf-8)
 
+(use-package fill-column-indicator :ensure t
+:config
+(setq fci-rule-use-dashes nil)
+(add-hook 'prog-mode-hook 'fci-mode))
+
 ;; set the default encoding system
 (prefer-coding-system 'utf-8)
 (setq default-file-name-coding-system 'utf-8)
@@ -301,7 +306,7 @@
 (use-package mixed-pitch :ensure t
   :hook
   ;; If you want it in all text modes:
-  (text-mode . mixed-pitch-mode))
+  (org-mode . mixed-pitch-mode))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

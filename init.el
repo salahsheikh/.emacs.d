@@ -17,7 +17,9 @@
                     :height 110
                     :weight 'normal
                     :width 'normal)
-(set-face-attribute 'variable-pitch nil :family "Sans" :height 140 :weight 'regular)
+(set-face-attribute 'variable-pitch nil :family "Sans" :height 110 :weight 'regular)
+
+(add-hook 'org-mode 'variable-pitch-mode)
 
 (tooltip-mode -1)
 (mouse-wheel-mode t)
@@ -53,10 +55,21 @@
 (global-auto-revert-mode t)
 (set-default 'indent-tabs-mode nil)
 (setq-default tab-width 4)
+
+(set-language-environment 'utf-8)
+(setq locale-coding-system 'utf-8)
+
+;; set the default encoding system
 (prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
+(setq default-file-name-coding-system 'utf-8)
+;; backwards compatibility as default-buffer-file-coding-system
+;; is deprecated in 23.2.
+(if (boundp buffer-file-coding-system)
+    (setq buffer-file-coding-system 'utf-8)
+  (setq default-buffer-file-coding-system 'utf-8))
+
+;; Treat clipboard input as UTF-8 string first; compound text next, etc.
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 (setq-default buffer-file-coding-system 'utf-8-auto-unix)
 
 (require 'package)
@@ -222,6 +235,8 @@
 (use-package company :ensure t :defer 2
   :config
   (add-to-list 'company-backends 'company-yasnippet)
+  (add-to-list 'company-backends 'company-elisp)
+  (add-to-list 'company-backends 'company-files)
   (setq company-idle-delay 0.2)
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1)
@@ -285,6 +300,11 @@
   :config
   (lsp-ui-doc-enable nil)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+(use-package mixed-pitch :ensure t
+  :hook
+  ;; If you want it in all text modes:
+  (text-mode . mixed-pitch-mode))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

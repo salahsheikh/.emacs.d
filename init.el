@@ -13,8 +13,8 @@
         ))
 
 (set-face-attribute 'default nil
-                    :family "DeJaVu Sans Mono"
-                    :height 90
+                    :family "Monaco"
+                    :height 110
                     :weight 'normal
                     :width 'normal)
 (set-face-attribute 'variable-pitch nil :family "Sans" :height 140 :weight 'regular)
@@ -158,9 +158,9 @@
   :config
   (global-hl-line-mode +1))
 
-(use-package spacemacs-theme
+(use-package intellij-theme
   :defer t
-  :init (load-theme 'spacemacs-light t))
+  :init (load-theme 'intellij t))
 
 (use-package diminish :ensure t :defer 2)
 

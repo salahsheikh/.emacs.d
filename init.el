@@ -155,12 +155,9 @@
 (use-package paren
   :config
   (custom-set-faces
-  '(show-paren-match ((t (:background "#497FAB" :foreground "white smoke"))))
-  '(show-paren-match-expression ((t (:background "#497FAB")))))
-
+   '(show-paren-match ((t (:background "powder blue")))))
   (setq show-paren-delay 0)
-  (setq show-paren-priority -50)
-  (show-paren-mode +1))
+  (show-paren-mode t))
 
 (use-package elec-pair
   :config

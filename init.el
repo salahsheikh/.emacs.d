@@ -8,16 +8,24 @@
 
 (setq load-prefer-newer t)
 
+;; Prefer splitting vertically for popups
+(setq split-width-threshold nil)
+(setq split-height-threshold 0)
+
 (setq initial-frame-alist '((width . 90) ; character
         (height . 50) ; lines
         ))
 
 (set-face-attribute 'default nil
-                    :family "Monaco"
-                    :height 110
+                    :family "DeJaVu Sans Mono"
+                    :height 100
                     :weight 'normal
                     :width 'normal)
-(set-face-attribute 'variable-pitch nil :family "Sans" :height 110 :weight 'regular)
+
+(set-face-attribute 'variable-pitch nil
+                    :family "Sans"
+                    :height 110
+                    :weight 'regular)
 
 (add-hook 'org-mode 'variable-pitch-mode)
 
@@ -58,11 +66,6 @@
 
 (set-language-environment 'utf-8)
 (setq locale-coding-system 'utf-8)
-
-(use-package fill-column-indicator :ensure t
-:config
-(setq fci-rule-use-dashes nil)
-(add-hook 'prog-mode-hook 'fci-mode))
 
 ;; set the default encoding system
 (prefer-coding-system 'utf-8)
@@ -307,6 +310,8 @@
   :hook
   ;; If you want it in all text modes:
   (org-mode . mixed-pitch-mode))
+
+(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

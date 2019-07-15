@@ -277,7 +277,14 @@
 
 (use-package magit :ensure t :defer 8
   :init
-  (define-key evil-normal-state-map "gs" 'magit-status))
+  (define-key evil-normal-state-map "gs" 'magit-status)
+  :config
+  (defun my-magit-mode-hook ()
+    "Custom `magit-mode' behaviours."
+    (setq left-fringe-width 10
+          right-fringe-width 0))
+
+  (add-hook 'magit-mode-hook 'my-magit-mode-hook))
 
 (use-package evil-magit :ensure t :defer 8
   :after magit)

@@ -253,6 +253,7 @@
 (add-hook 'prog-mode-hook
         (lambda ()
             (push '("lambda" . ?λ) prettify-symbols-alist)
+            (push '("return" . ?➥) prettify-symbols-alist)
             (push '("->" . ?→) prettify-symbols-alist)
             (push '("=>" . ?⇒) prettify-symbols-alist)
             (push '("!=" . ?≠) prettify-symbols-alist)
@@ -273,6 +274,12 @@
             (push '("in"     . ?∈) prettify-symbols-alist)
             (push '("not in" . ?∉) prettify-symbols-alist)
             (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
+            ))
+
+(add-hook 'rust-mode-hook
+        (lambda ()
+            (push '("fn"    . ?ƒ) prettify-symbols-alist)
+            (push '("::"    . ?∷) prettify-symbols-alist)
             ))
 
 (use-package magit :ensure t :defer 8
@@ -319,6 +326,53 @@
   (org-mode . mixed-pitch-mode))
 
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+
+(defun aborn/backward-kill-word ()
+  "Customize/Smart backward-kill-word. Author: Aborn Jiang"
+  (interactive)
+  (let* ((cp (point))
+         (backword)
+         (end)
+         (space-pos)
+         (backword-char (if (bobp)
+                            ""           ;; cursor in begin of buffer
+                          (buffer-substring cp (- cp 1)))))
+    (if (equal (length backword-char) (string-width backword-char))
+        (progn
+          (save-excursion
+            (setq backword (buffer-substring (point) (progn (forward-word -1) (point)))))
+          (setq ab/debug backword)
+          (save-excursion
+            (when (and backword          ;; when backword contains space
+                       (s-contains? " " backword))
+              (setq space-pos (ignore-errors (search-backward " ")))))
+          (save-excursion
+            (let* ((pos (ignore-errors (search-backward-regexp "\n")))
+                   (substr (when pos (buffer-substring pos cp))))
+              (when (or (and substr (s-blank? (s-trim substr)))
+                        (s-contains? "\n" backword))
+                (setq end pos))))
+          (if end
+              (kill-region cp end)
+            (if space-pos
+                (kill-region cp space-pos)
+              (backward-kill-word 1))))
+      (kill-region cp (- cp 1)))         ;; word is non-english word
+    ))
+
+(global-set-key  [C-backspace]
+            'aborn/backward-kill-word)
+
+(use-package spaceline :ensure t
+  :init
+  (setq powerline-default-separator 'bar)
+  (setq evil-normal-state-tag "🅝")
+  (setq evil-insert-state-tag "🅘")
+  (setq evil-visual-state-tag "🅥")
+  :config
+  (use-package spaceline-config)
+  (spaceline-spacemacs-theme)
+  (spaceline-compile))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

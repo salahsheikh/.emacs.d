@@ -17,10 +17,8 @@
         ))
 
 (set-face-attribute 'default nil
-                    :family "DeJaVu Sans Mono"
-                    :height 100
-                    :weight 'normal
-                    :width 'normal)
+                    :family "Liberation Mono"
+                    :height 100)
 
 (set-face-attribute 'variable-pitch nil
                     :family "Sans"
@@ -176,7 +174,7 @@
   :config
   (global-hl-line-mode +1))
 
-(use-package intellij-theme
+(use-package intellij-theme :ensure t
   :defer t
   :init (load-theme 'intellij t))
 
@@ -372,6 +370,7 @@
   :config
   (use-package spaceline-config)
   (spaceline-spacemacs-theme)
+  (spaceline-helm-mode)
   (spaceline-compile))
 
 (setq custom-file "~/.emacs.d/custom.el")

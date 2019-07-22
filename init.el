@@ -16,8 +16,12 @@
         (height . 50) ; lines
         ))
 
+
+(custom-set-faces
+ '(fill-column-indicator ((t (:foreground "#e0e0e0")))))
+
 (set-face-attribute 'default nil
-                    :family "Liberation Mono"
+                    :family "DeJaVu Sans Mono"
                     :height 100)
 
 (set-face-attribute 'variable-pitch nil
@@ -38,14 +42,13 @@
 (column-number-mode t)
 (size-indication-mode t)
 
-
 (set-default 'truncate-lines nil)
 (add-hook 'prog-mode-hook #'toggle-truncate-lines)
 
 (setq frame-resize-pixelwise t)
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
-(global-display-line-numbers-mode)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (setq visible-bell nil)
 (setq ring-bell-function 'ignore)
 ;; Newline at end of file
@@ -56,6 +59,7 @@
 (setq-default fill-column 80)
 
 (setq inhibit-startup-screen t)
+(setq inhibit-startup-message t)
 (setq create-lockfiles nil)
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode t)
@@ -91,7 +95,9 @@
 (eval-when-compile
   (require 'use-package))
 
-(use-package evil :ensure t
+(setq use-package-always-ensure t)
+
+(use-package evil 
   :init
   (setq evil-want-integration t) 
   (setq evil-want-keybinding nil)
@@ -100,12 +106,10 @@
 
 (use-package evil-collection
   :after evil
-  :requires evil
-  :ensure t
   :config
   (evil-collection-init))
 
-(use-package helm :ensure t :defer 2
+(use-package helm :demand t
   :init
   (setq helm-M-x-fuzzy-match t
 	helm-mode-fuzzy-match t
@@ -133,12 +137,13 @@
 )
 
 ;; fuzzier matching for helm
-(use-package helm-flx :ensure t
+(use-package helm-flx 
   :after helm
   :config
   (helm-flx-mode +1))
 
-(use-package swiper-helm :ensure t :defer 2
+(use-package swiper-helm :defer 2
+  :after helm
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer)
@@ -159,9 +164,9 @@
 
 ;;; built-in packages
 (use-package paren
+  :custom-face
+  (show-paren-match ((t (:background "powder blue"))))
   :config
-  (custom-set-faces
-   '(show-paren-match ((t (:background "powder blue")))))
   (setq show-paren-delay 0)
   (show-paren-mode t))
 
@@ -174,11 +179,10 @@
   :config
   (global-hl-line-mode +1))
 
-(use-package intellij-theme :ensure t
-  :defer t
+(use-package intellij-theme :demand t
   :init (load-theme 'intellij t))
 
-(use-package diminish :ensure t :defer 2)
+(use-package diminish :defer 2)
 
 (eval-after-load "helm" '(diminish 'helm-mode))
 (eval-after-load "company" '(diminish 'company-mode))
@@ -192,14 +196,14 @@
     (setq mode-name "el"))) 
 
 ;; Moves selected region around.
-(use-package drag-stuff :ensure t :defer 2
+(use-package drag-stuff :defer 2
   :diminish drag-stuff-mode
   :bind (("M-<down>" . drag-stuff-down)
          ("M-<up>" . drag-stuff-up))
   :config
   (drag-stuff-global-mode))
 
-(use-package highlight-indentation :ensure t :defer 2
+(use-package highlight-indentation :defer 2
   :diminish highlight-indentation-mode
   :diminish highlight-indentation-current-column-mode
   :config
@@ -207,8 +211,8 @@
   (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
   (add-hook 'prog-mode-hook #'highlight-indentation-mode))
 
-(use-package avy :ensure t :defer 4
-  :requires evil
+(use-package avy :defer 4
+  :after evil
   :config
   (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
   (define-key evil-normal-state-map "gl" 'evil-avy-goto-line)
@@ -216,7 +220,7 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package git-gutter :ensure t :defer 2
+(use-package git-gutter :defer 2
   :config
   ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
@@ -235,7 +239,7 @@
 
 (set-fringe-style nil)
 
-(use-package company :ensure t :defer 2
+(use-package company :defer 2
   :config
   (add-to-list 'company-backends 'company-yasnippet)
   (add-to-list 'company-backends 'company-elisp)
@@ -274,13 +278,18 @@
             (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
             ))
 
+(set-fontset-font "fontset-default" 'unicode
+              "-unknown-Symbola-normal-normal-semicondensed-*-16-*-*-*-*-0-iso10646-1")
+(set-fontset-font "fontset-default" 'unicode-bmp
+              "-unknown-Symbola-normal-normal-semicondensed-*-16-*-*-*-*-0-iso10646-1")
+
 (add-hook 'rust-mode-hook
         (lambda ()
             (push '("fn"    . ?ƒ) prettify-symbols-alist)
             (push '("::"    . ?∷) prettify-symbols-alist)
             ))
 
-(use-package magit :ensure t :defer 8
+(use-package magit :defer 8
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
@@ -291,34 +300,33 @@
 
   (add-hook 'magit-mode-hook 'my-magit-mode-hook))
 
-(use-package evil-magit :ensure t :defer 8
+(use-package evil-magit :defer 8
   :after magit)
 
-(use-package yasnippet :ensure t 
+(use-package yasnippet :defer 2
   :config
   (yas-global-mode 1))
 
-(use-package yasnippet-snippets :ensure t
+(use-package yasnippet-snippets :defer t
   :after yasnippet)
 
-(use-package lsp-mode :ensure t
-  :requires yasnippet
+(use-package lsp-mode :defer t
   :config
-  (add-hook 'python-mode-hook #'lsp))
+  (add-hook 'python-mode-hook #'lsp-deferred))
 
-(use-package company-lsp :ensure t
-  :after lsp-mode
+(use-package company-lsp 
+  :after (lsp-mode yasnippet)
   :config
   (setq company-lsp-enable-snippet t)
   (push 'company-lsp company-backends))
 
-(use-package lsp-ui :ensure t
+(use-package lsp-ui 
   :after lsp-mode
   :config
   (lsp-ui-doc-enable nil)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-(use-package mixed-pitch :ensure t
+(use-package mixed-pitch :defer t
   :hook
   ;; If you want it in all text modes:
   (org-mode . mixed-pitch-mode))
@@ -361,17 +369,44 @@
 (global-set-key  [C-backspace]
             'aborn/backward-kill-word)
 
-(use-package spaceline :ensure t
+(use-package spaceline 
   :init
+  (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
   (setq powerline-default-separator 'bar)
   (setq evil-normal-state-tag "🅝")
   (setq evil-insert-state-tag "🅘")
   (setq evil-visual-state-tag "🅥")
   :config
-  (use-package spaceline-config)
+  (require 'spaceline-config)
+  (powerline-reset)
   (spaceline-spacemacs-theme)
   (spaceline-helm-mode)
   (spaceline-compile))
+
+;; Normal scrolling
+(setq scroll-margin 10
+      scroll-step 1
+      scroll-conservatively 10000
+      scroll-preserve-screen-position 1)
+
+(use-package ace-window :defer 2
+  :config
+  (define-key speedbar-mode-map [remap evil-window-next] 'ace-window)
+  (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
+
+(use-package sr-speedbar
+  :config
+  (setq sr-speedbar-width 20)
+  (setq sr-speedbar-right-side nil))
+
+(setq-default header-line-format
+                    '("" ;; invocation-name
+                      (:eval (if (buffer-file-name)
+                                 (abbreviate-file-name (buffer-file-name))
+                               "%b"))
+                      ))
+
+(setq python-python-command "/usr/bin/python3")
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

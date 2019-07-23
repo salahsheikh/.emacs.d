@@ -30,16 +30,17 @@
  '(git-gutter:update-interval 0.2)
  '(helm-case-fold-search t)
  '(package-selected-packages
-   '(edbi-sqlite edbi treemacs sublimity which-key sr-speedbar rainbow-mode ace-window yasnippet-snippets vi-tilde-fringe use-package unicode-fonts swiper-helm spacemacs-theme spaceline rust-mode mixed-pitch lsp-ui intellij-theme highlight-indentation helm-flx git-gutter flymake-cursor fill-column-indicator evil-magit evil-collection drag-stuff diminish company-lsp avy)))
+   '(esup web-mode jsx-mode edbi-sqlite edbi treemacs sublimity which-key sr-speedbar rainbow-mode ace-window yasnippet-snippets vi-tilde-fringe use-package unicode-fonts swiper-helm spacemacs-theme spaceline rust-mode mixed-pitch lsp-ui intellij-theme highlight-indentation helm-flx git-gutter flymake-cursor fill-column-indicator evil-magit evil-collection drag-stuff diminish company-lsp avy)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(aw-leading-char-face ((t (:foreground "DarkSeaGreen4" :inverse-video t :box (:line-width 2 :color "grey75" :style released-button)))))
- '(fill-column-indicator ((t (:foreground "#e0e0e0"))))
+ '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.5))))
  '(header-line ((t (:inherit mode-line :background "black" :foreground "gray90" :inverse-video t :box nil :underline nil :slant normal :weight normal))))
  '(minibuffer-prompt ((t (:foreground "SkyBlue3" :inverse-video nil :underline nil :slant normal :weight bold))))
  '(mode-line ((t (:background "#ffffff" :foreground "#000000" :inverse-video t :box (:line-width 1 :color "grey75" :style released-button) :underline nil :slant normal :weight normal))))
- '(mode-line-inactive ((t (:inherit mode-line :background "gainsboro" :foreground "gray50" :inverse-video t :box (:line-width 1 :color "grey75" :style released-button) :underline nil :slant normal :weight normal))))
- '(show-paren-match ((t (:background "powder blue")))))
+ '(mode-line-inactive ((t (:inherit mode-line :background "gray30" :foreground "dark gray" :inverse-video t :box (:line-width 1 :color "grey75" :style released-button) :underline nil :slant normal :weight normal))))
+ '(show-paren-match ((t (:background "powder blue"))))
+ '(spaceline-highlight-face ((t (:background "white smoke" :foreground "#3E3D31" :inherit 'mode-line)))))

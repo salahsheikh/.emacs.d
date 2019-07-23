@@ -1,3 +1,5 @@
+(setq gc-cons-threshold most-positive-fixnum)
+
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
@@ -16,13 +18,11 @@
         (height . 50) ; lines
         ))
 
-
 (custom-set-faces
  '(fill-column-indicator ((t (:foreground "#e0e0e0")))))
 
-(set-face-attribute 'default nil
-                    :family "DeJaVu Sans Mono"
-                    :height 100)
+(add-to-list 'default-frame-alist
+             '(font . "DejaVu Sans Mono-9"))
 
 (set-face-attribute 'variable-pitch nil
                     :family "Sans"
@@ -97,7 +97,14 @@
 
 (setq use-package-always-ensure t)
 
-(use-package evil 
+(use-package server
+  :init
+  (server-mode 1)
+  :config
+  (unless (server-running-p)
+    (server-start)))
+
+(use-package evil
   :init
   (setq evil-want-integration t) 
   (setq evil-want-keybinding nil)
@@ -109,7 +116,7 @@
   :config
   (evil-collection-init))
 
-(use-package helm :demand t
+(use-package helm 
   :init
   (setq helm-M-x-fuzzy-match t
 	helm-mode-fuzzy-match t
@@ -131,6 +138,20 @@
   (global-set-key (kbd "M-x") #'helm-M-x)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
   (global-set-key (kbd "C-x C-b") #'helm-buffers-list)
+
+  (defun helm-skip-dots (old-func &rest args)
+    "Skip . and .. initially in helm-find-files.  First call OLD-FUNC with ARGS."
+    (apply old-func args)
+    (let ((sel (helm-get-selection)))
+      (if (and (stringp sel) (string-match "/\\.$" sel))
+          (helm-next-line 2)))
+    (let ((sel (helm-get-selection))) ; if we reached .. move back
+      (if (and (stringp sel) (string-match "/\\.\\.$" sel))
+          (helm-previous-line 1))))
+
+  (advice-add #'helm-preselect :around #'helm-skip-dots)
+  (advice-add #'helm-ff-move-to-first-real-candidate :around #'helm-skip-dots)
+  
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
   (helm-mode 1)
@@ -142,47 +163,34 @@
   :config
   (helm-flx-mode +1))
 
-(use-package swiper-helm :defer 2
+(use-package swiper-helm 
   :after helm
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer)
   )
 
-(defun helm-skip-dots (old-func &rest args)
-  "Skip . and .. initially in helm-find-files.  First call OLD-FUNC with ARGS."
-  (apply old-func args)
-  (let ((sel (helm-get-selection)))
-    (if (and (stringp sel) (string-match "/\\.$" sel))
-	(helm-next-line 2)))
-  (let ((sel (helm-get-selection))) ; if we reached .. move back
-    (if (and (stringp sel) (string-match "/\\.\\.$" sel))
-	(helm-previous-line 1))))
-
-(advice-add #'helm-preselect :around #'helm-skip-dots)
-(advice-add #'helm-ff-move-to-first-real-candidate :around #'helm-skip-dots)
-
 ;;; built-in packages
-(use-package paren
+(use-package paren 
   :custom-face
   (show-paren-match ((t (:background "powder blue"))))
   :config
   (setq show-paren-delay 0)
   (show-paren-mode t))
 
-(use-package elec-pair
+(use-package elec-pair 
   :config
   (electric-pair-mode +1))
 
 ;; highlight the current line
-(use-package hl-line
+(use-package hl-line 
   :config
   (global-hl-line-mode +1))
 
-(use-package intellij-theme :demand t
+(use-package intellij-theme 
   :init (load-theme 'intellij t))
 
-(use-package diminish :defer 2)
+(use-package diminish)
 
 (eval-after-load "helm" '(diminish 'helm-mode))
 (eval-after-load "company" '(diminish 'company-mode))
@@ -196,14 +204,14 @@
     (setq mode-name "el"))) 
 
 ;; Moves selected region around.
-(use-package drag-stuff :defer 2
+(use-package drag-stuff 
   :diminish drag-stuff-mode
   :bind (("M-<down>" . drag-stuff-down)
          ("M-<up>" . drag-stuff-up))
   :config
   (drag-stuff-global-mode))
 
-(use-package highlight-indentation :defer 2
+(use-package highlight-indentation 
   :diminish highlight-indentation-mode
   :diminish highlight-indentation-current-column-mode
   :config
@@ -211,7 +219,7 @@
   (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
   (add-hook 'prog-mode-hook #'highlight-indentation-mode))
 
-(use-package avy :defer 4
+(use-package avy
   :after evil
   :config
   (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
@@ -220,7 +228,7 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package git-gutter :defer 2
+(use-package git-gutter 
   :config
   ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
@@ -239,24 +247,14 @@
 
 (set-fringe-style nil)
 
-(use-package company :defer 2
-  :config
-  (add-to-list 'company-backends 'company-yasnippet)
-  (add-to-list 'company-backends 'company-elisp)
-  (add-to-list 'company-backends 'company-files)
-  (setq company-idle-delay 0.2)
-  (setq company-show-numbers t)
-  (setq company-minimum-prefix-length 1)
-  (global-company-mode))
-
-(global-prettify-symbols-mode)
+(add-hook 'prog-mode-hook #'prettify-symbols-mode)
 (setq prettify-symbols-unprettify-at-point 'right-edge)
 (setq inhibit-compacting-font-caches t)
 (add-hook 'prog-mode-hook
         (lambda ()
             (push '("lambda" . ?λ) prettify-symbols-alist)
-            (push '("return" . ?➥) prettify-symbols-alist)
-            (push '("->" . ?→) prettify-symbols-alist)
+            (push '("return" . ?⮱) prettify-symbols-alist)
+            (push '("->" . ?🠆) prettify-symbols-alist)
             (push '("=>" . ?⇒) prettify-symbols-alist)
             (push '("!=" . ?≠) prettify-symbols-alist)
             (push '("==" . ?≡) prettify-symbols-alist)
@@ -278,18 +276,19 @@
             (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
             ))
 
-(set-fontset-font "fontset-default" 'unicode
-              "-unknown-Symbola-normal-normal-semicondensed-*-16-*-*-*-*-0-iso10646-1")
-(set-fontset-font "fontset-default" 'unicode-bmp
-              "-unknown-Symbola-normal-normal-semicondensed-*-16-*-*-*-*-0-iso10646-1")
-
 (add-hook 'rust-mode-hook
         (lambda ()
             (push '("fn"    . ?ƒ) prettify-symbols-alist)
             (push '("::"    . ?∷) prettify-symbols-alist)
             ))
 
-(use-package magit :defer 8
+(when (member "Symbola" (font-family-list))
+    (setq use-default-font-for-symbols nil)
+    (set-fontset-font "fontset-default" 'unicode (font-spec :name "Symbola"))
+    (set-fontset-font "fontset-default" 'unicode-bmp (font-spec :name "Symbola")))
+
+(use-package magit 
+  :after evil
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
@@ -300,22 +299,32 @@
 
   (add-hook 'magit-mode-hook 'my-magit-mode-hook))
 
-(use-package evil-magit :defer 8
+(use-package evil-magit 
   :after magit)
 
-(use-package yasnippet :defer 2
+(use-package yasnippet 
   :config
   (yas-global-mode 1))
 
-(use-package yasnippet-snippets :defer t
+(use-package yasnippet-snippets 
   :after yasnippet)
 
-(use-package lsp-mode :defer t
+(use-package lsp-mode 
   :config
   (add-hook 'python-mode-hook #'lsp-deferred))
 
+(use-package company 
+  :config
+  (add-to-list 'company-backends 'company-yasnippet)
+  (add-to-list 'company-backends 'company-elisp)
+  (add-to-list 'company-backends 'company-files)
+  (setq company-idle-delay 0.2)
+  (setq company-show-numbers t)
+  (setq company-minimum-prefix-length 1)
+  (global-company-mode))
+
 (use-package company-lsp 
-  :after (lsp-mode yasnippet)
+  :after (lsp-mode yasnippet company)
   :config
   (setq company-lsp-enable-snippet t)
   (push 'company-lsp company-backends))
@@ -326,7 +335,7 @@
   (lsp-ui-doc-enable nil)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-(use-package mixed-pitch :defer t
+(use-package mixed-pitch 
   :hook
   ;; If you want it in all text modes:
   (org-mode . mixed-pitch-mode))
@@ -389,7 +398,8 @@
       scroll-conservatively 10000
       scroll-preserve-screen-position 1)
 
-(use-package ace-window :defer 2
+(use-package ace-window 
+  :after speedbar
   :config
   (define-key speedbar-mode-map [remap evil-window-next] 'ace-window)
   (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
@@ -410,3 +420,5 @@
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
+
+(setq gc-cons-threshold 262144)

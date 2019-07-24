@@ -14,9 +14,7 @@
 (setq split-width-threshold nil)
 (setq split-height-threshold 0)
 
-(setq initial-frame-alist '((width . 90) ; character
-        (height . 50) ; lines
-        ))
+(setq initial-frame-alist '((width . 90) (height . 50)))
 
 (custom-set-faces
  '(fill-column-indicator ((t (:foreground "#e0e0e0")))))
@@ -30,6 +28,8 @@
                     :weight 'regular)
 
 (add-hook 'org-mode 'variable-pitch-mode)
+(setq org-hide-emphasis-markers t)
+
 
 (tooltip-mode -1)
 (mouse-wheel-mode t)
@@ -49,6 +49,7 @@
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+;(global-display-line-numbers-mode t)
 (setq visible-bell nil)
 (setq ring-bell-function 'ignore)
 ;; Newline at end of file
@@ -59,7 +60,7 @@
 (setq-default fill-column 80)
 
 (setq inhibit-startup-screen t)
-(setq inhibit-startup-message t)
+
 (setq create-lockfiles nil)
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode t)
@@ -134,6 +135,16 @@
 	helm-autoresize-max-height 0
 	helm-autoresize-min-height 20)
   :config
+  (defun helm-dashboard()
+    "Author: MikeTheTall"
+    (if (< (length command-line-args) 2)
+    (let ((helm-full-frame-orig helm-full-frame) (helm-mini-default-sources-orig helm-mini-default-sources))
+        (setq helm-full-frame t)
+        (setq helm-mini-default-sources `(helm-source-bookmarks helm-source-recentf))
+        (helm-mini)
+        (setq helm-full-frame helm-full-frame-orig)
+        (setq helm-mini-default-sources helm-mini-default-sources-orig))))
+  (add-hook 'window-setup-hook (lambda () (helm-dashboard)))
   (setq helm-candidate-number-limit 100)
   (global-set-key (kbd "M-x") #'helm-M-x)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
@@ -257,7 +268,7 @@
             (push '("->" . ?🠆) prettify-symbols-alist)
             (push '("=>" . ?⇒) prettify-symbols-alist)
             (push '("!=" . ?≠) prettify-symbols-alist)
-            (push '("==" . ?≡) prettify-symbols-alist)
+            (push '("==" . ?⩵) prettify-symbols-alist)
             (push '("<=" . ?≤) prettify-symbols-alist)
             (push '(">=" . ?≥) prettify-symbols-alist)
             (push '("pi". ?π) prettify-symbols-alist)
@@ -389,6 +400,7 @@
   (require 'spaceline-config)
   (powerline-reset)
   (spaceline-spacemacs-theme)
+  (spaceline-toggle-buffer-id-off)
   (spaceline-helm-mode)
   (spaceline-compile))
 
@@ -409,14 +421,33 @@
   (setq sr-speedbar-width 20)
   (setq sr-speedbar-right-side nil))
 
-(setq-default header-line-format
-                    '("" ;; invocation-name
-                      (:eval (if (buffer-file-name)
-                                 (abbreviate-file-name (buffer-file-name))
-                               "%b"))
-                      ))
+(defun get-buffer-title ()
+  (if (buffer-file-name)
+      (abbreviate-file-name (buffer-file-name))
+    (abbreviate-file-name (buffer-name)))
+  )
 
-(setq python-python-command "/usr/bin/python3")
+(defvar ml-selected-window nil)
+
+(defun ml-record-selected-window ()
+  (setq ml-selected-window (selected-window)))
+
+(defun ml-update-all ()
+  (force-mode-line-update t))
+
+(add-hook 'post-command-hook 'ml-record-selected-window)
+
+(add-hook 'buffer-list-update-hook 'ml-update-all)
+
+(setq-default header-line-format
+              '(:eval
+                (if (and (not (string-suffix-p "*helm" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
+                    (if (eq ml-selected-window (selected-window))
+                        (propertize (get-buffer-title) 'face 'mode-line)
+                      (propertize (get-buffer-title) 'face 'mode-line-inactive))
+                  nil)))
+
+(setq py-python-command "python3")
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

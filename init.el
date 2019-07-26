@@ -118,6 +118,7 @@
   (evil-collection-init))
 
 (use-package helm 
+  :diminish helm-mode
   :init
   (setq helm-M-x-fuzzy-match t
 	helm-mode-fuzzy-match t
@@ -203,16 +204,13 @@
 
 (use-package diminish)
 
-(eval-after-load "helm" '(diminish 'helm-mode))
-(eval-after-load "company" '(diminish 'company-mode))
 (eval-after-load "subword" '(diminish 'subword-mode))
-(eval-after-load "flycheck" '(diminish 'flycheck-mode))
 (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
 (eval-after-load "whitespace" '(diminish 'whitespace-mode))
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
 (add-hook 'emacs-lisp-mode-hook 
   (lambda()
-    (setq mode-name "el"))) 
+    (setq mode-name "elisp"))) 
 
 ;; Moves selected region around.
 (use-package drag-stuff 
@@ -314,6 +312,7 @@
   :after magit)
 
 (use-package yasnippet 
+  :diminish yas-minor-mode
   :config
   (yas-global-mode 1))
 
@@ -325,6 +324,7 @@
   (add-hook 'python-mode-hook #'lsp-deferred))
 
 (use-package company 
+  :diminish company-mode
   :config
   (add-to-list 'company-backends 'company-yasnippet)
   (add-to-list 'company-backends 'company-elisp)
@@ -424,8 +424,7 @@
 (defun get-buffer-title ()
   (if (buffer-file-name)
       (abbreviate-file-name (buffer-file-name))
-    (abbreviate-file-name (buffer-name)))
-  )
+    (abbreviate-file-name (buffer-name))))
 
 (defvar ml-selected-window nil)
 
@@ -439,6 +438,13 @@
 
 (add-hook 'buffer-list-update-hook 'ml-update-all)
 
+(defun stop-using-minibuffer ()
+  "kill the minibuffer"
+  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
+    (abort-recursive-edit)))
+
+(add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
+
 (setq-default header-line-format
               '(:eval
                 (if (and (not (string-suffix-p "*helm" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
@@ -447,7 +453,9 @@
                       (propertize (get-buffer-title) 'face 'mode-line-inactive))
                   nil)))
 
-(setq py-python-command "python3")
+(when (member "DeJaVu Sans" (font-family-list))
+  (with-current-buffer (get-buffer " *Echo Area 0*")
+    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans" :height 0.9) variable-pitch)))))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)

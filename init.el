@@ -1,5 +1,3 @@
-(setq gc-cons-threshold most-positive-fixnum)
-
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
@@ -8,80 +6,7 @@
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
 
-(setq load-prefer-newer t)
-
-;; Prefer splitting vertically for popups
-(setq split-width-threshold nil)
-(setq split-height-threshold 0)
-
-(setq initial-frame-alist '((width . 90) (height . 50)))
-
-(custom-set-faces
- '(fill-column-indicator ((t (:foreground "#e0e0e0")))))
-
-(add-to-list 'default-frame-alist
-             '(font . "DejaVu Sans Mono-9"))
-
-(set-face-attribute 'variable-pitch nil
-                    :family "Sans"
-                    :height 110
-                    :weight 'regular)
-
-(add-hook 'org-mode 'variable-pitch-mode)
-(setq org-hide-emphasis-markers t)
-
-
-(tooltip-mode -1)
-(mouse-wheel-mode t)
-(scroll-bar-mode -1)
-(menu-bar-mode -1)
-(when (fboundp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(blink-cursor-mode -1)
-(line-number-mode t)
-(column-number-mode t)
-(size-indication-mode t)
-
-(set-default 'truncate-lines nil)
-(add-hook 'prog-mode-hook #'toggle-truncate-lines)
-
-(setq frame-resize-pixelwise t)
-;; enable y/n answers
-(fset 'yes-or-no-p 'y-or-n-p)
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
-;(global-display-line-numbers-mode t)
-(setq visible-bell nil)
-(setq ring-bell-function 'ignore)
-;; Newline at end of file
-(setq require-final-newline t)
-
-(setq font-lock-maximum-decoration t)
-;; Wrap lines at 80 characters
-(setq-default fill-column 80)
-
-(setq inhibit-startup-screen t)
-
 (setq create-lockfiles nil)
-;; revert buffers automatically when underlying files are changed externally
-(global-auto-revert-mode t)
-(set-default 'indent-tabs-mode nil)
-(setq-default tab-width 4)
-
-(set-language-environment 'utf-8)
-(setq locale-coding-system 'utf-8)
-
-;; set the default encoding system
-(prefer-coding-system 'utf-8)
-(setq default-file-name-coding-system 'utf-8)
-;; backwards compatibility as default-buffer-file-coding-system
-;; is deprecated in 23.2.
-(if (boundp buffer-file-coding-system)
-    (setq buffer-file-coding-system 'utf-8)
-  (setq default-buffer-file-coding-system 'utf-8))
-
-;; Treat clipboard input as UTF-8 string first; compound text next, etc.
-(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-(setq-default buffer-file-coding-system 'utf-8-auto-unix)
 
 (require 'package)
 (setq package-enable-at-startup nil)
@@ -98,24 +23,78 @@
 
 (setq use-package-always-ensure t)
 
-(use-package server
-  :init
-  (server-mode 1)
-  :config
-  (unless (server-running-p)
-    (server-start)))
+(use-package diminish)
 
+(eval-after-load "subword" '(diminish 'subword-mode))
+(eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
+(eval-after-load "whitespace" '(diminish 'whitespace-mode))
+(eval-after-load "eldoc" '(diminish 'eldoc-mode))
+(add-hook 'emacs-lisp-mode-hook 
+  (lambda()
+    (setq mode-name "elisp"))) 
+
+;; necessary packages
 (use-package evil
   :init
   (setq evil-want-integration t) 
   (setq evil-want-keybinding nil)
-  :config
-  (evil-mode 1))
+  :hook (after-init . evil-mode))
 
-(use-package evil-collection
+(use-package evil-collection :defer 4
   :after evil
   :config
   (evil-collection-init))
+
+(use-package magit :defer 2
+  :after evil
+  :init
+  (define-key evil-normal-state-map "gs" 'magit-status)
+  :config
+  (defun my-magit-mode-hook ()
+    "Custom `magit-mode' behaviours."
+    (setq left-fringe-width 10
+          right-fringe-width 0))
+
+  (add-hook 'magit-mode-hook 'my-magit-mode-hook))
+
+(use-package evil-magit 
+  :after magit)
+
+(use-package avy
+  :after (evil evil-collection)
+  :config
+  (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
+  (define-key evil-normal-state-map "gl" 'evil-avy-goto-line)
+  (define-key evil-motion-state-map "gc" 'evil-avy-goto-char)
+  (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
+  (setq avy-background t))
+
+(use-package ace-window
+  :after evil
+  :custom-face
+  (aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 3.0))))
+  :config
+  (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
+
+(use-package switch-window
+  :after evil)
+
+(use-package git-gutter :defer 2
+  :config
+  ;; Ignore git status icons. Colors are enough.
+  (custom-set-variables
+   '(git-gutter:modified-sign " ") 
+   '(git-gutter:added-sign " ")   
+   '(git-gutter:deleted-sign " "))
+  (custom-set-variables
+   '(git-gutter:update-interval 0.2)
+   '(git-gutter:hide-gutter t)
+   )
+  (progn
+    (set-face-background 'git-gutter:deleted "#f2bfb6")
+    (set-face-background 'git-gutter:modified "#c3d6e8")
+    (set-face-background 'git-gutter:added "#c9dec1"))
+  (global-git-gutter-mode))
 
 (use-package helm 
   :diminish helm-mode
@@ -163,7 +142,7 @@
 
   (advice-add #'helm-preselect :around #'helm-skip-dots)
   (advice-add #'helm-ff-move-to-first-real-candidate :around #'helm-skip-dots)
-  
+
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
   (helm-mode 1)
@@ -182,36 +161,6 @@
   (setq swiper-helm-display-function 'helm-default-display-buffer)
   )
 
-;;; built-in packages
-(use-package paren 
-  :custom-face
-  (show-paren-match ((t (:background "powder blue"))))
-  :config
-  (setq show-paren-delay 0)
-  (show-paren-mode t))
-
-(use-package elec-pair 
-  :config
-  (electric-pair-mode +1))
-
-;; highlight the current line
-(use-package hl-line 
-  :config
-  (global-hl-line-mode +1))
-
-(use-package intellij-theme 
-  :init (load-theme 'intellij t))
-
-(use-package diminish)
-
-(eval-after-load "subword" '(diminish 'subword-mode))
-(eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
-(eval-after-load "whitespace" '(diminish 'whitespace-mode))
-(eval-after-load "eldoc" '(diminish 'eldoc-mode))
-(add-hook 'emacs-lisp-mode-hook 
-  (lambda()
-    (setq mode-name "elisp"))) 
-
 ;; Moves selected region around.
 (use-package drag-stuff 
   :diminish drag-stuff-mode
@@ -220,110 +169,17 @@
   :config
   (drag-stuff-global-mode))
 
-(use-package highlight-indentation 
-  :diminish highlight-indentation-mode
-  :diminish highlight-indentation-current-column-mode
-  :config
-  (set-face-background 'highlight-indentation-face "#e3e3d3")
-  (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
-  (add-hook 'prog-mode-hook #'highlight-indentation-mode))
-
-(use-package avy
-  :after evil
-  :config
-  (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
-  (define-key evil-normal-state-map "gl" 'evil-avy-goto-line)
-  (define-key evil-motion-state-map "gc" 'evil-avy-goto-char)
-  (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
-  (setq avy-background t))
-
-(use-package git-gutter 
-  :config
-  ;; Ignore git status icons. Colors are enough.
-  (custom-set-variables
-   '(git-gutter:modified-sign " ") 
-   '(git-gutter:added-sign " ")   
-   '(git-gutter:deleted-sign " "))
-  (custom-set-variables
-   '(git-gutter:update-interval 0.2)
-   '(git-gutter:hide-gutter t)
-   )
-  (progn
-    (set-face-background 'git-gutter:deleted "#f2bfb6")
-    (set-face-background 'git-gutter:modified "#c3d6e8")
-    (set-face-background 'git-gutter:added "#c9dec1"))
-  (global-git-gutter-mode))
-
-(set-fringe-style nil)
-
-(add-hook 'prog-mode-hook #'prettify-symbols-mode)
-(setq prettify-symbols-unprettify-at-point 'right-edge)
-(setq inhibit-compacting-font-caches t)
-(add-hook 'prog-mode-hook
-        (lambda ()
-            (push '("lambda" . ?λ) prettify-symbols-alist)
-            (push '("return" . ?⮱) prettify-symbols-alist)
-            (push '("->" . ?🠆) prettify-symbols-alist)
-            (push '("=>" . ?⇒) prettify-symbols-alist)
-            (push '("!=" . ?≠) prettify-symbols-alist)
-            (push '("==" . ?⩵) prettify-symbols-alist)
-            (push '("<=" . ?≤) prettify-symbols-alist)
-            (push '(">=" . ?≥) prettify-symbols-alist)
-            (push '("pi". ?π) prettify-symbols-alist)
-            (push '("&&" . ?∧) prettify-symbols-alist)
-            (push '("||" . ?∨) prettify-symbols-alist)))
-
-(add-hook 'python-mode-hook
-        (lambda ()
-            (push '("def"    . ?ƒ) prettify-symbols-alist)
-            (push '("sum"    . ?Σ) prettify-symbols-alist)
-            (push '("**2"    . ?²) prettify-symbols-alist)
-            (push '("**3"    . ?³) prettify-symbols-alist)
-            (push '("None"   . ?∅) prettify-symbols-alist)
-            (push '("in"     . ?∈) prettify-symbols-alist)
-            (push '("not in" . ?∉) prettify-symbols-alist)
-            (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)
-            ))
-
-(add-hook 'rust-mode-hook
-        (lambda ()
-            (push '("fn"    . ?ƒ) prettify-symbols-alist)
-            (push '("::"    . ?∷) prettify-symbols-alist)
-            ))
-
-(when (member "Symbola" (font-family-list))
-    (setq use-default-font-for-symbols nil)
-    (set-fontset-font "fontset-default" 'unicode (font-spec :name "Symbola"))
-    (set-fontset-font "fontset-default" 'unicode-bmp (font-spec :name "Symbola")))
-
-(use-package magit 
-  :after evil
-  :init
-  (define-key evil-normal-state-map "gs" 'magit-status)
-  :config
-  (defun my-magit-mode-hook ()
-    "Custom `magit-mode' behaviours."
-    (setq left-fringe-width 10
-          right-fringe-width 0))
-
-  (add-hook 'magit-mode-hook 'my-magit-mode-hook))
-
-(use-package evil-magit 
-  :after magit)
-
-(use-package yasnippet 
+(use-package yasnippet :defer 4
   :diminish yas-minor-mode
   :config
+  (use-package yasnippet-snippets)
   (yas-global-mode 1))
 
-(use-package yasnippet-snippets 
-  :after yasnippet)
-
-(use-package lsp-mode 
+(use-package lsp-mode :defer 6
   :config
   (add-hook 'python-mode-hook #'lsp-deferred))
 
-(use-package company 
+(use-package company :defer 6
   :diminish company-mode
   :config
   (add-to-list 'company-backends 'company-yasnippet)
@@ -346,13 +202,104 @@
   (lsp-ui-doc-enable nil)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-(use-package mixed-pitch 
-  :hook
-  ;; If you want it in all text modes:
-  (org-mode . mixed-pitch-mode))
+;; end of necessary packages
 
-(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+;; ui customization
 
+(setq frame-resize-pixelwise t)
+
+;;; built-in packages
+(add-to-list 'default-frame-alist
+             '(font . "DejaVu Sans Mono-9"))
+
+(set-default 'indent-tabs-mode nil)
+(setq-default tab-width 4)
+
+(setq initial-frame-alist '((width . 90) (height . 50)))
+
+(set-fringe-style nil)
+
+(setq split-width-threshold nil)
+(setq split-height-threshold 0)
+
+(mouse-wheel-mode -1)
+
+(set-default 'truncate-lines nil)
+(add-hook 'prog-mode-hook #'toggle-truncate-lines)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(add-hook 'prog-mode-hook #'auto-revert-mode)
+
+(fset 'yes-or-no-p 'y-or-n-p)
+
+(setq visible-bell nil)
+(setq ring-bell-function 'ignore)
+
+(use-package paren 
+  :custom-face
+  (show-paren-match ((t (:background "powder blue"))))
+  :config
+  (setq show-paren-delay 0)
+  (show-paren-mode t))
+
+(use-package elec-pair :defer 2
+  :config
+  (electric-pair-mode +1))
+
+;; highlight the current line
+(use-package hl-line :defer 1
+  :config
+  (global-hl-line-mode +1))
+
+(use-package highlight-indentation 
+  :diminish highlight-indentation-mode
+  :diminish highlight-indentation-current-column-mode
+  :config
+  (set-face-background 'highlight-indentation-face "#e3e3d3")
+  (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
+  (add-hook 'prog-mode-hook #'highlight-indentation-mode))
+
+(use-package intellij-theme 
+  :init (load-theme 'intellij t))
+
+(when (member "DeJaVu Sans" (font-family-list))
+  (with-current-buffer (get-buffer " *Echo Area 0*")
+    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
+
+;; display nice file path in headerline
+(setq-default header-line-format '(:eval
+                (if (and (not (string-suffix-p "*helm" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
+                    (if (eq ml-selected-window (selected-window))
+                        (propertize (get-buffer-title) 'face 'mode-line)
+                      (propertize (get-buffer-title) 'face 'mode-line-inactive))
+                  nil)))
+
+(defun get-buffer-title ()
+  (if (buffer-file-name)
+      (abbreviate-file-name (buffer-file-name))
+    (abbreviate-file-name (buffer-name))))
+
+(defvar ml-selected-window nil)
+
+(defun ml-record-selected-window ()
+  (setq ml-selected-window (selected-window)))
+
+(defun ml-update-all ()
+  (force-mode-line-update t))
+
+(add-hook 'post-command-hook 'ml-record-selected-window)
+
+(add-hook 'buffer-list-update-hook 'ml-update-all)
+
+;; if mouse is clicked on something, leave active minibuffer
+(defun stop-using-minibuffer ()
+  "kill the minibuffer"
+  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
+    (abort-recursive-edit)))
+
+(add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
+
+;; custom ctrl+backspace behavior
+(use-package s)
 (defun aborn/backward-kill-word ()
   "Customize/Smart backward-kill-word. Author: Aborn Jiang"
   (interactive)
@@ -389,75 +336,109 @@
 (global-set-key  [C-backspace]
             'aborn/backward-kill-word)
 
-(use-package spaceline 
-  :init
-  (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
-  (setq powerline-default-separator 'bar)
-  (setq evil-normal-state-tag "🅝")
-  (setq evil-insert-state-tag "🅘")
-  (setq evil-visual-state-tag "🅥")
-  :config
-  (require 'spaceline-config)
-  (powerline-reset)
-  (spaceline-spacemacs-theme)
-  (spaceline-toggle-buffer-id-off)
-  (spaceline-helm-mode)
-  (spaceline-compile))
-
 ;; Normal scrolling
 (setq scroll-margin 10
       scroll-step 1
       scroll-conservatively 10000
       scroll-preserve-screen-position 1)
 
-(use-package ace-window 
-  :after speedbar
-  :config
-  (define-key speedbar-mode-map [remap evil-window-next] 'ace-window)
-  (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
+;; set the default encoding system
+(set-language-environment 'utf-8)
+(setq locale-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
 
-(use-package sr-speedbar
-  :config
-  (setq sr-speedbar-width 20)
-  (setq sr-speedbar-right-side nil))
+;; Treat clipboard input as UTF-8 string first; compound text next, etc.
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+(setq-default buffer-file-coding-system 'utf-8-auto-unix)
 
-(defun get-buffer-title ()
-  (if (buffer-file-name)
-      (abbreviate-file-name (buffer-file-name))
-    (abbreviate-file-name (buffer-name))))
+;; make some symbols look better
+(add-hook 'prog-mode-hook #'prettify-symbols-mode)
+(setq prettify-symbols-unprettify-at-point 'right-edge)
+(setq inhibit-compacting-font-caches t)
 
-(defvar ml-selected-window nil)
+(add-hook 'prog-mode-hook
+        (lambda ()
+            (push '("lambda" . ?λ) prettify-symbols-alist)
+            (push '("return" . ?⮱) prettify-symbols-alist)
+            (push '("->" . ?🠆) prettify-symbols-alist)
+            (push '("=>" . ?⇒) prettify-symbols-alist)
+            (push '("!=" . ?≠) prettify-symbols-alist)
+            (push '("==" . ?⩵) prettify-symbols-alist)
+            (push '("<=" . ?≤) prettify-symbols-alist)
+            (push '(">=" . ?≥) prettify-symbols-alist)
+            (push '("pi". ?π) prettify-symbols-alist)
+            (push '("&&" . ?∧) prettify-symbols-alist)
+            (push '("||" . ?∨) prettify-symbols-alist)))
 
-(defun ml-record-selected-window ()
-  (setq ml-selected-window (selected-window)))
+(add-hook 'python-mode-hook
+        (lambda ()
+            (push '("def"    . ?ƒ) prettify-symbols-alist)
+            (push '("sum"    . ?Σ) prettify-symbols-alist)
+            (push '("**2"    . ?²) prettify-symbols-alist)
+            (push '("**3"    . ?³) prettify-symbols-alist)
+            (push '("None"   . ?∅) prettify-symbols-alist)
+            (push '("in"     . ?∈) prettify-symbols-alist)
+            (push '("not in" . ?∉) prettify-symbols-alist)
+            (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)))
 
-(defun ml-update-all ()
-  (force-mode-line-update t))
+(add-hook 'rust-mode-hook
+        (lambda ()
+            (push '("fn"    . ?ƒ) prettify-symbols-alist)
+            (push '("::"    . ?∷) prettify-symbols-alist)))
 
-(add-hook 'post-command-hook 'ml-record-selected-window)
+(when (member "Symbola" (font-family-list))
+    (setq use-default-font-for-symbols nil)
+    (set-fontset-font "fontset-default" 'unicode (font-spec :name "Symbola"))
+    (set-fontset-font "fontset-default" 'unicode-bmp (font-spec :name "Symbola")))
 
-(add-hook 'buffer-list-update-hook 'ml-update-all)
 
-(defun stop-using-minibuffer ()
-  "kill the minibuffer"
-  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
-    (abort-recursive-edit)))
+;; Wrap lines at 80 characters
+(setq-default fill-column 80)
+(custom-set-faces
+ '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3 )))))
+(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
-(add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
+(setq font-lock-maximum-decoration t)
 
-(setq-default header-line-format
-              '(:eval
-                (if (and (not (string-suffix-p "*helm" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
-                    (if (eq ml-selected-window (selected-window))
-                        (propertize (get-buffer-title) 'face 'mode-line)
-                      (propertize (get-buffer-title) 'face 'mode-line-inactive))
-                  nil)))
+;; org mode customization
+(set-face-attribute 'variable-pitch nil
+                    :family "Sans"
+                    :height 110
+                    :weight 'regular)
+
+(add-hook 'org-mode 'variable-pitch-mode)
+
+(use-package mixed-pitch 
+  :hook
+  ;; If you want it in all text modes:
+  (org-mode . mixed-pitch-mode))
+
+(setq org-hide-emphasis-markers t)
+
+
+;; (use-package spaceline 
+;;   :init
+;;   (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
+;;   (setq powerline-default-separator 'bar)
+;;   (setq evil-normal-state-tag "🅝")
+;;   (setq evil-insert-state-tag "🅘")
+;;   (setq evil-visual-state-tag "🅥")
+;;   :config
+;;   (require 'spaceline-config)
+;;   (powerline-reset)
+;;   (spaceline-spacemacs-theme)
+;;   (spaceline-toggle-buffer-id-off)
+;;   (spaceline-helm-mode)
+;;   (spaceline-compile))
 
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
     (setq-local face-remapping-alist '((default (:family "DeJaVu Sans" :height 0.9) variable-pitch)))))
+;; end of ui customization
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 
 (setq gc-cons-threshold 262144)
+
+(setq-default inhibit-message nil)

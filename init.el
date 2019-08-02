@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
@@ -8,22 +10,21 @@
 
 (setq create-lockfiles nil)
 
-(require 'package)
-(setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
 (eval-when-compile
-  (require 'use-package))
+    (require 'package)
+    (setq package-enable-at-startup nil)
+    (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+    (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+    (package-initialize)
 
-(setq use-package-always-ensure t)
+    (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
 
-(use-package diminish)
+    (setq use-package-always-ensure t)
+
+    (require 'use-package)
+    (require 'diminish))
 
 (eval-after-load "subword" '(diminish 'subword-mode))
 (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
@@ -40,12 +41,12 @@
   (setq evil-want-keybinding nil)
   :hook (after-init . evil-mode))
 
-(use-package evil-collection :defer 4
+(use-package evil-collection :defer 1
   :after evil
   :config
   (evil-collection-init))
 
-(use-package magit :defer 2
+(use-package magit :defer 4
   :after evil
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
@@ -79,7 +80,7 @@
 (use-package switch-window
   :after evil)
 
-(use-package git-gutter :defer 2
+(use-package git-gutter :defer 1
   :config
   ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
@@ -120,10 +121,11 @@
     (if (< (length command-line-args) 2)
     (let ((helm-full-frame-orig helm-full-frame) (helm-mini-default-sources-orig helm-mini-default-sources))
         (setq helm-full-frame t)
-        (setq helm-mini-default-sources `(helm-source-bookmarks helm-source-recentf))
+        ;; (setq helm-mini-default-sources `(helm-source-bookmarks helm-source-recentf))
+        ;; (helm-mini)
+        ;; (setq helm-mini-default-sources helm-mini-default-sources-orig)
         (helm-mini)
-        (setq helm-full-frame helm-full-frame-orig)
-        (setq helm-mini-default-sources helm-mini-default-sources-orig))))
+        (setq helm-full-frame helm-full-frame-orig))))
   (add-hook 'window-setup-hook (lambda () (helm-dashboard)))
   (setq helm-candidate-number-limit 100)
   (global-set-key (kbd "M-x") #'helm-M-x)
@@ -169,7 +171,7 @@
   :config
   (drag-stuff-global-mode))
 
-(use-package yasnippet :defer 4
+(use-package yasnippet :defer 2
   :diminish yas-minor-mode
   :config
   (use-package yasnippet-snippets)
@@ -177,6 +179,7 @@
 
 (use-package lsp-mode :defer 6
   :config
+  (setq lsp-prefer-flymake nil)
   (add-hook 'python-mode-hook #'lsp-deferred))
 
 (use-package company :defer 6
@@ -196,11 +199,20 @@
   (setq company-lsp-enable-snippet t)
   (push 'company-lsp company-backends))
 
+(use-package flycheck)
+
 (use-package lsp-ui 
-  :after lsp-mode
+  :after (lsp-mode flycheck)
   :config
-  (lsp-ui-doc-enable nil)
+  (setq lsp-ui-doc-enable nil
+        lsp-ui-flycheck-enable t)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+(use-package rust-mode)
+
+(use-package which-key :defer 8
+  :config
+  (which-key-mode))
 
 ;; end of necessary packages
 
@@ -210,7 +222,7 @@
 
 ;;; built-in packages
 (add-to-list 'default-frame-alist
-             '(font . "DejaVu Sans Mono-9"))
+             '(font . "DejaVu Sans Mono-10"))
 
 (set-default 'indent-tabs-mode nil)
 (setq-default tab-width 4)
@@ -227,11 +239,14 @@
 (set-default 'truncate-lines nil)
 (add-hook 'prog-mode-hook #'toggle-truncate-lines)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
-(add-hook 'prog-mode-hook #'auto-revert-mode)
+
+(use-package autorevert :defer 8
+  :config
+  (global-auto-revert-mode t))
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(setq visible-bell nil)
+(setq visible-bell t)
 (setq ring-bell-function 'ignore)
 
 (use-package paren 
@@ -241,7 +256,7 @@
   (setq show-paren-delay 0)
   (show-paren-mode t))
 
-(use-package elec-pair :defer 2
+(use-package elec-pair :defer 1
   :config
   (electric-pair-mode +1))
 
@@ -263,7 +278,8 @@
 
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
-    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
+    (setq-local face-remapping-alist
+                '((default (:family "DeJaVu Sans") variable-pitch)))))
 
 ;; display nice file path in headerline
 (setq-default header-line-format '(:eval
@@ -393,7 +409,7 @@
 
 
 ;; Wrap lines at 80 characters
-(setq-default fill-column 80)
+(setq-default fill-column 79)
 (custom-set-faces
  '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3 )))))
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
@@ -415,25 +431,27 @@
 
 (setq org-hide-emphasis-markers t)
 
-
-;; (use-package spaceline 
-;;   :init
-;;   (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
-;;   (setq powerline-default-separator 'bar)
-;;   (setq evil-normal-state-tag "🅝")
-;;   (setq evil-insert-state-tag "🅘")
-;;   (setq evil-visual-state-tag "🅥")
-;;   :config
-;;   (require 'spaceline-config)
-;;   (powerline-reset)
-;;   (spaceline-spacemacs-theme)
-;;   (spaceline-toggle-buffer-id-off)
-;;   (spaceline-helm-mode)
-;;   (spaceline-compile))
+(use-package spaceline :defer 0.1
+  :init
+  (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
+  (setq powerline-default-separator 'bar)
+  (setq evil-normal-state-tag "🅝")
+  (setq evil-insert-state-tag "🅘")
+  (setq evil-visual-state-tag "🅥")
+  :config
+  (require 'spaceline-config)
+  (powerline-reset)
+  (spaceline-spacemacs-theme)
+  (spaceline-toggle-buffer-id-off)
+  (spaceline-helm-mode)
+  (spaceline-compile)
+  (message "Loaded spaceline..."))
 
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
     (setq-local face-remapping-alist '((default (:family "DeJaVu Sans" :height 0.9) variable-pitch)))))
+
+(setq auto-window-vscroll nil) 
 ;; end of ui customization
 
 (setq custom-file "~/.emacs.d/custom.el")
@@ -442,3 +460,7 @@
 (setq gc-cons-threshold 262144)
 
 (setq-default inhibit-message nil)
+
+(setq inhibit-startup-screen t)
+(setq inhibit-startup-echo-area-message t)
+(setq initial-scratch-message nil)

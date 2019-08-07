@@ -1,5 +1,3 @@
-;; -*- lexical-binding: t; -*-
-
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
@@ -41,7 +39,7 @@
   (setq evil-want-keybinding nil)
   :hook (after-init . evil-mode))
 
-(use-package evil-collection :defer 1
+(use-package evil-collection :defer 2
   :after evil
   :config
   (evil-collection-init))
@@ -70,10 +68,10 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package ace-window
+(use-package ace-window :defer 2
   :after evil
   :custom-face
-  (aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 3.0))))
+  (aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 2.0))))
   :config
   (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
 
@@ -108,6 +106,8 @@
 	helm-semantic-fuzzy-match t
 	helm-imenu-fuzzy-match t
 	helm-completion-in-region-fuzzy-match t
+    helm-follow-mode-persistent t
+    helm-quick-update t
 	helm-candidate-number-list 150
 	helm-split-window-in-side-p t
 	helm-move-to-line-cycle-in-source t
@@ -147,21 +147,29 @@
 
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
-  (helm-mode 1)
-)
+  (helm-mode 1))
 
 ;; fuzzier matching for helm
-(use-package helm-flx 
+(use-package helm-flx :defer 1
   :after helm
   :config
   (helm-flx-mode +1))
 
-(use-package swiper-helm 
+(use-package swiper-helm :defer 1
   :after helm
   :bind ("C-s" . swiper-helm)
   :config
-  (setq swiper-helm-display-function 'helm-default-display-buffer)
-  )
+  (setq swiper-helm-display-function 'helm-default-display-buffer))
+
+(use-package helm-ag
+  :after (helm))
+
+(use-package projectile :defer 2
+  :config
+  (projectile-mode +1))
+
+(use-package helm-projectile
+  :after (helm))
 
 ;; Moves selected region around.
 (use-package drag-stuff 
@@ -171,13 +179,13 @@
   :config
   (drag-stuff-global-mode))
 
-(use-package yasnippet :defer 2
+(use-package yasnippet :defer 4
   :diminish yas-minor-mode
   :config
   (use-package yasnippet-snippets)
   (yas-global-mode 1))
 
-(use-package lsp-mode :defer 6
+(use-package lsp-mode :defer 2
   :config
   (setq lsp-prefer-flymake nil)
   (add-hook 'python-mode-hook #'lsp-deferred))
@@ -193,6 +201,11 @@
   (setq company-minimum-prefix-length 1)
   (global-company-mode))
 
+(use-package company-flx
+  :after (company)
+  :config
+  (company-flx-mode +1))
+
 (use-package company-lsp 
   :after (lsp-mode yasnippet company)
   :config
@@ -201,10 +214,20 @@
 
 (use-package flycheck)
 
+(use-package helm-flycheck
+  :init
+  (defvar helm-source-flycheck
+    '((name . "Flycheck")
+      (init . helm-flycheck-init)
+      (candidates . helm-flycheck-candidates)
+      (action-transformer helm-flycheck-action-transformer)
+      (action . (("Go to" . helm-flycheck-action-goto-error)))
+      (follow . 1))))
+
 (use-package lsp-ui 
   :after (lsp-mode flycheck)
   :config
-  (setq lsp-ui-doc-enable nil
+  (setq lsp-ui-doc-enable t
         lsp-ui-flycheck-enable t)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
@@ -283,7 +306,7 @@
 
 ;; display nice file path in headerline
 (setq-default header-line-format '(:eval
-                (if (and (not (string-suffix-p "*helm" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
+                (if (and (not (string-suffix-p "*" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
                     (if (eq ml-selected-window (selected-window))
                         (propertize (get-buffer-title) 'face 'mode-line)
                       (propertize (get-buffer-title) 'face 'mode-line-inactive))
@@ -349,8 +372,7 @@
       (kill-region cp (- cp 1)))         ;; word is non-english word
     ))
 
-(global-set-key  [C-backspace]
-            'aborn/backward-kill-word)
+(global-set-key  [C-backspace] 'aborn/backward-kill-word)
 
 ;; Normal scrolling
 (setq scroll-margin 10
@@ -414,8 +436,6 @@
  '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3 )))))
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
-(setq font-lock-maximum-decoration t)
-
 ;; org mode customization
 (set-face-attribute 'variable-pitch nil
                     :family "Sans"
@@ -431,7 +451,7 @@
 
 (setq org-hide-emphasis-markers t)
 
-(use-package spaceline :defer 0.1
+(use-package spaceline :defer 2
   :init
   (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
   (setq powerline-default-separator 'bar)
@@ -440,12 +460,9 @@
   (setq evil-visual-state-tag "🅥")
   :config
   (require 'spaceline-config)
-  (powerline-reset)
   (spaceline-spacemacs-theme)
   (spaceline-toggle-buffer-id-off)
-  (spaceline-helm-mode)
-  (spaceline-compile)
-  (message "Loaded spaceline..."))
+  (spaceline-helm-mode))
 
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
@@ -464,3 +481,5 @@
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-echo-area-message t)
 (setq initial-scratch-message nil)
+
+(message (emacs-init-time))

@@ -1,8 +1,4 @@
-;; -*- lexical-binding: t; -*-
-
 (setq gc-cons-threshold most-positive-fixnum)
-
-(setq-default inhibit-message t)
 
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)

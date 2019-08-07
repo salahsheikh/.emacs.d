@@ -1,10 +1,8 @@
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
+(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
 (setq create-lockfiles nil)
 
@@ -289,13 +287,10 @@
   :config
   (global-hl-line-mode +1))
 
-(use-package highlight-indentation 
-  :diminish highlight-indentation-mode
-  :diminish highlight-indentation-current-column-mode
+(use-package highlight-indent-guides
   :config
-  (set-face-background 'highlight-indentation-face "#e3e3d3")
-  (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
-  (add-hook 'prog-mode-hook #'highlight-indentation-mode))
+  (setq highlight-indent-guides-method 'column)
+  (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
 (use-package intellij-theme 
   :init (load-theme 'intellij t))

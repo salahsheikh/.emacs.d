@@ -32,10 +32,18 @@
 
 ;; necessary packages
 (use-package evil
+  :hook (after-init . evil-mode)
   :init
   (setq evil-want-integration t) 
   (setq evil-want-keybinding nil)
-  :hook (after-init . evil-mode))
+  :config
+  (dolist (k
+    '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]  
+      [mouse-2] [down-mouse-2] [drag-mouse-2] [double-mouse-2] [triple-mouse-2]
+      [mouse-3] [down-mouse-3] [drag-mouse-3] [double-mouse-3] [triple-mouse-3]
+      [mouse-4] [down-mouse-4] [drag-mouse-4] [double-mouse-4] [triple-mouse-4]
+      [mouse-5] [down-mouse-5] [drag-mouse-5] [double-mouse-5] [triple-mouse-5]))
+  (define-key evil-normal-state-map k 'ignore)))
 
 (use-package evil-collection :defer 2
   :after evil
@@ -462,6 +470,10 @@
     (setq-local face-remapping-alist '((default (:family "DeJaVu Sans" :height 0.9) variable-pitch)))))
 
 (setq auto-window-vscroll nil) 
+
+;; disablemouse interaction
+(dolist (k mwheel-installed-bindings)
+  (global-set-key k 'ignore))
 ;; end of ui customization
 
 (setq custom-file "~/.emacs.d/custom.el")

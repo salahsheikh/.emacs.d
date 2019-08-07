@@ -45,7 +45,7 @@
   (evil-collection-init))
 
 (use-package magit :defer 4
-  :after evil
+  :after (evil git-gutter)
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
@@ -53,7 +53,8 @@
     "Custom `magit-mode' behaviours."
     (setq left-fringe-width 10
           right-fringe-width 0))
-
+  (add-hook 'magit-post-refresh-hook
+            #'git-gutter:update-all-windows)
   (add-hook 'magit-mode-hook 'my-magit-mode-hook))
 
 (use-package evil-magit 

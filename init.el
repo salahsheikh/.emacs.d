@@ -243,20 +243,15 @@
 (setq frame-resize-pixelwise t)
 
 ;;; built-in packages
-(add-to-list 'default-frame-alist
-             '(font . "DejaVu Sans Mono-10"))
+;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
 
 (set-default 'indent-tabs-mode nil)
 (setq-default tab-width 4)
 
 (setq initial-frame-alist '((width . 90) (height . 50)))
 
-(set-fringe-style nil)
-
 (setq split-width-threshold nil)
 (setq split-height-threshold 0)
-
-(mouse-wheel-mode -1)
 
 (set-default 'truncate-lines nil)
 (add-hook 'prog-mode-hook #'toggle-truncate-lines)
@@ -292,8 +287,7 @@
   (setq highlight-indent-guides-method 'column)
   (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
-(use-package intellij-theme 
-  :init (load-theme 'intellij t))
+(use-package intellij-theme :init (load-theme 'intellij t))
 
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
@@ -319,6 +313,9 @@
   (setq ml-selected-window (selected-window)))
 
 (defun ml-update-all ()
+  (if (derived-mode-p 'prog-mode)
+      (setq left-fringe-width 0)
+    (setq left-fringe-width 5))
   (force-mode-line-update t))
 
 (add-hook 'post-command-hook 'ml-record-selected-window)

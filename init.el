@@ -37,6 +37,7 @@
   (setq evil-want-integration t) 
   (setq evil-want-keybinding nil)
   :config
+  (add-hook 'org-capture-mode-hook 'evil-insert-state)
   (dolist (k
     '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]  
       [mouse-2] [down-mouse-2] [drag-mouse-2] [double-mouse-2] [triple-mouse-2]
@@ -59,6 +60,7 @@
     "Custom `magit-mode' behaviours."
     (setq left-fringe-width 10
           right-fringe-width 0))
+  (add-hook 'with-editor-mode-hook 'evil-insert-state)
   (add-hook 'magit-post-refresh-hook
             #'git-gutter:update-all-windows)
   (add-hook 'magit-mode-hook 'my-magit-mode-hook))
@@ -151,7 +153,7 @@
 
   (advice-add #'helm-preselect :around #'helm-skip-dots)
   (advice-add #'helm-ff-move-to-first-real-candidate :around #'helm-skip-dots)
-
+  (define-key helm-map [escape] 'helm-keyboard-quit)
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
   (helm-mode 1))
@@ -186,6 +188,7 @@
   :config
   (drag-stuff-global-mode))
 
+
 (use-package yasnippet :defer 4
   :diminish yas-minor-mode
   :config
@@ -201,9 +204,10 @@
   :diminish company-mode
   :config
   (add-to-list 'company-backends 'company-yasnippet)
-  (add-to-list 'company-backends 'company-elisp)
   (add-to-list 'company-backends 'company-files)
-  (setq company-idle-delay 0.2)
+  (add-to-list 'company-backends 'company-elisp)
+  (setq company-idle-delay 0)
+  (setq company-echo-delay 0)
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1)
   (global-company-mode))
@@ -249,6 +253,9 @@
 ;; ui customization
 
 (setq frame-resize-pixelwise t)
+
+(setq c-default-style "linux"
+      c-basic-offset 4)
 
 ;;; built-in packages
 ;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
@@ -445,6 +452,42 @@
 
 (add-hook 'org-mode 'variable-pitch-mode)
 
+(setq org-directory "~/org")
+(setq org-default-notes-file "~/org/notes.org")
+
+(setq org-agenda-files '("~/org"))
+
+(global-set-key (kbd "C-c c") 'org-capture)
+
+(setq org-todo-keywords
+      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+              (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+
+(setq org-todo-keyword-faces
+      (quote (("TODO" :foreground "red" :weight bold)
+              ("NEXT" :foreground "blue" :weight bold)
+              ("DONE" :foreground "forest green" :weight bold)
+              ("WAITING" :foreground "orange" :weight bold)
+              ("HOLD" :foreground "magenta" :weight bold)
+              ("CANCELLED" :foreground "forest green" :weight bold)
+              ("MEETING" :foreground "forest green" :weight bold)
+              ("PHONE" :foreground "forest green" :weight bold))))
+
+(setq org-todo-state-tags-triggers
+      (quote (("CANCELLED" ("CANCELLED" . t))
+              ("WAITING" ("WAITING" . t))
+              ("HOLD" ("WAITING") ("HOLD" . t))
+              (done ("WAITING") ("HOLD"))
+              ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
+              ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
+              ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
+
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/todo.org" "Tasks")
+         "* TODO %?\n %i")
+        ("m" "Meeting" entry (file+headline "~/org/todo.org" "Meetings")
+         "* MEETING WITH %?\n%i\nSCHEDULED: %^T")))
+
 (use-package mixed-pitch 
   :hook
   ;; If you want it in all text modes:
@@ -467,13 +510,20 @@
 
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
-    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans" :height 0.9) variable-pitch)))))
+    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
 
 (setq auto-window-vscroll nil) 
 
 ;; disablemouse interaction
 (dolist (k mwheel-installed-bindings)
   (global-set-key k 'ignore))
+
+(defun spacemacs//hide-cursor-in-helm-buffer ()
+  "Hide the cursor in helm buffers."
+  (with-helm-buffer
+    (setq cursor-in-non-selected-windows nil)))
+(add-hook 'helm-after-initialize-hook 
+          'spacemacs//hide-cursor-in-helm-buffer)
 ;; end of ui customization
 
 (setq custom-file "~/.emacs.d/custom.el")

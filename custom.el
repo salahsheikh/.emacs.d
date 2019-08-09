@@ -30,7 +30,7 @@
  '(git-gutter:update-interval 0.2)
  '(helm-case-fold-search t)
  '(package-selected-packages
-   '(base16-theme which-key eclipse-theme rust-mode yasnippet-snippets use-package switch-window swiper-helm mixed-pitch lsp-ui intellij-theme highlight-indentation helm-flx git-gutter evil-magit evil-collection drag-stuff diminish company-lsp ace-window)))
+   '(notmuch base16-theme which-key eclipse-theme rust-mode yasnippet-snippets use-package switch-window swiper-helm mixed-pitch lsp-ui intellij-theme highlight-indentation helm-flx git-gutter evil-magit evil-collection drag-stuff diminish company-lsp ace-window)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -40,7 +40,7 @@
  '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3))))
  '(header-line ((t (:inherit mode-line :background "black" :foreground "gray90" :inverse-video t :box nil :underline nil :slant normal :weight normal))))
  '(minibuffer-prompt ((t (:foreground "SkyBlue3" :inverse-video nil :underline nil :slant normal :weight bold))))
- '(mode-line ((t (:background "#ffffff" :foreground "#000000" :inverse-video t :box (:line-width 1 :color "grey75" :style released-button) :underline nil :slant normal :weight normal :family "DeJaVu Sans"))))
+ '(mode-line ((t (:background "#ffffff" :foreground "#000000" :inverse-video t :box nil :underline nil :slant normal :weight normal :family "DeJaVu Sans"))))
  '(mode-line-inactive ((t (:inherit mode-line :background "gray30" :foreground "dark gray" :inverse-video t :box (:line-width 1 :color "grey75" :style released-button) :underline nil :slant normal :weight normal))))
  '(show-paren-match ((t (:background "powder blue"))))
  '(spaceline-highlight-face ((t (:background "white smoke" :foreground "#3E3D31" :inherit 'mode-line)))))

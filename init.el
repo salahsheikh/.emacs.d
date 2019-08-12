@@ -198,7 +198,8 @@
 (use-package lsp-mode :defer 2
   :config
   (setq lsp-prefer-flymake nil)
-  (add-hook 'python-mode-hook #'lsp-deferred))
+  (add-hook 'python-mode-hook #'lsp-deferred)
+  (add-hook 'java-mode-hook #'lsp-deferred))
 
 (use-package company :defer 6
   :diminish company-mode
@@ -250,7 +251,13 @@
 
 ;; end of necessary packages
 
-;; ui customization
+;; start of programming language specific packages
+(use-package python-mode)
+
+(use-package rust-mode)
+
+(use-package lsp-java)
+;; end of programming language specific packages
 
 (setq frame-resize-pixelwise t)
 
@@ -314,8 +321,7 @@
                 (if (and (not (string-suffix-p "*" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
                     (if (eq ml-selected-window (selected-window))
                         (propertize (get-buffer-title) 'face 'mode-line)
-                      (propertize (get-buffer-title) 'face 'mode-line-inactive))
-                  nil)))
+                      (propertize (get-buffer-title) 'face 'mode-line-inactive)) nil)))
 
 (defun get-buffer-title ()
   (if (buffer-file-name)
@@ -441,7 +447,7 @@
 ;; Wrap lines at 80 characters
 (setq-default fill-column 79)
 (custom-set-faces
- '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3 )))))
+ '(fill-column-indicator ((t (:foreground "#e0e0e0")))))
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
 ;; org mode customization
@@ -458,6 +464,10 @@
 (setq org-agenda-files '("~/org"))
 
 (global-set-key (kbd "C-c c") 'org-capture)
+
+(use-package org-bullets
+  :config
+  (add-hook 'org-mode-hook (lambda() (org-bullets-mode 1))))
 
 (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
@@ -508,6 +518,11 @@
   (spaceline-toggle-buffer-id-off)
   (spaceline-helm-mode))
 
+(use-package powerline
+  :after (spaceline spaceline-config)
+  :config
+  (setq powerline-height (truncate (* 1.0 (frame-char-height)))))
+
 (when (member "DeJaVu Sans" (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
     (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
@@ -524,6 +539,8 @@
     (setq cursor-in-non-selected-windows nil)))
 (add-hook 'helm-after-initialize-hook 
           'spacemacs//hide-cursor-in-helm-buffer)
+
+(blink-cursor-mode 0)
 ;; end of ui customization
 
 (setq custom-file "~/.emacs.d/custom.el")

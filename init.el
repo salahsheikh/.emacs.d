@@ -23,6 +23,7 @@
     (require 'diminish))
 
 (eval-after-load "subword" '(diminish 'subword-mode))
+(eval-after-load "abbrev" '(diminish 'abbrev-mode))
 (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
 (eval-after-load "whitespace" '(diminish 'whitespace-mode))
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
@@ -88,6 +89,7 @@
   :after evil)
 
 (use-package git-gutter :defer 1
+  :diminish git-gutter-mode
   :config
   ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
@@ -177,11 +179,11 @@
   :config
   (projectile-mode +1))
 
-(use-package helm-projectile
+(use-package helm-projectile :defer 1
   :after (helm))
 
 ;; Moves selected region around.
-(use-package drag-stuff 
+(use-package drag-stuff :defer 1
   :diminish drag-stuff-mode
   :bind (("M-<down>" . drag-stuff-down)
          ("M-<up>" . drag-stuff-up))
@@ -193,40 +195,57 @@
   :diminish yas-minor-mode
   :config
   (use-package yasnippet-snippets)
+  (use-package java-snippets)
   (yas-global-mode 1))
 
 (use-package lsp-mode :defer 2
+  :after (evil yasnippet yasnippet-snippets lsp-java)
   :config
   (setq lsp-prefer-flymake nil)
+  (define-key evil-motion-state-map "gd" 'lsp-find-definition)
   (add-hook 'python-mode-hook #'lsp-deferred)
   (add-hook 'java-mode-hook #'lsp-deferred))
 
 (use-package company :defer 6
+  :after yasnippet
   :diminish company-mode
   :config
-  (add-to-list 'company-backends 'company-yasnippet)
-  (add-to-list 'company-backends 'company-files)
-  (add-to-list 'company-backends 'company-elisp)
-  (setq company-idle-delay 0)
-  (setq company-echo-delay 0)
+  ;(add-to-list 'company-backends 'company-files)
+  (use-package company-lsp 
+    :config
+    (setq company-lsp-enable-snippet t)
+    (setq lsp-enable-snippet t))
+
+  (push '(company-lsp) company-backends)
+
+  (defun user/enable-yas-for-backend (backend)
+    "Add yasnippet support for specified BACKEND."
+    (if (and (listp backend) (member 'company-yasnippet backend))
+        backend
+      (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+
+  ;; Enable for all company backends. Add to hook to prevent missed backends.
+  (add-hook 'yas-minor-mode-hook
+            (lambda()
+              (setq company-backends
+                    (mapcar #'user/enable-yas-for-backend company-backends))))
+
+  (setq company-idle-delay 0.01)
+  (setq company-echo-delay 0.01)
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1)
   (global-company-mode))
 
-(use-package company-flx
+(use-package company-flx :defer 1
   :after (company)
   :config
   (company-flx-mode +1))
 
-(use-package company-lsp 
-  :after (lsp-mode yasnippet company)
-  :config
-  (setq company-lsp-enable-snippet t)
-  (push 'company-lsp company-backends))
-
-(use-package flycheck)
+(use-package flycheck :defer 1)
 
 (use-package helm-flycheck
+  :after (flycheck)
   :init
   (defvar helm-source-flycheck
     '((name . "Flycheck")
@@ -239,24 +258,22 @@
 (use-package lsp-ui 
   :after (lsp-mode flycheck)
   :config
-  (setq lsp-ui-doc-enable t
+  (setq lsp-ui-doc-enable nil
+        lsp-ui-sideline-enable nil
         lsp-ui-flycheck-enable t)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-(use-package rust-mode)
-
 (use-package which-key :defer 8
+  :diminish which-key-mode
   :config
   (which-key-mode))
 
 ;; end of necessary packages
 
 ;; start of programming language specific packages
-(use-package python-mode)
+(use-package rust-mode :defer t)
 
-(use-package rust-mode)
-
-(use-package lsp-java)
+(use-package lsp-java :defer 1)
 ;; end of programming language specific packages
 
 (setq frame-resize-pixelwise t)
@@ -289,8 +306,9 @@
 (setq ring-bell-function 'ignore)
 
 (use-package paren 
-  :custom-face
-  (show-paren-match ((t (:background "powder blue"))))
+  ;; intellij theme specific
+  ;:custom-face
+  ;(show-paren-match ((t (:background "powder blue"))))
   :config
   (setq show-paren-delay 0)
   (show-paren-mode t))
@@ -305,7 +323,15 @@
   (global-hl-line-mode +1))
 
 (use-package highlight-indent-guides
+  :diminish highlight-indent-guides-mode
   :config
+  (defun my-highlighter (level response display)
+    (if (> 1 level)
+        nil
+      (highlight-indent-guides--highlighter-default level response display)))
+
+  (setq highlight-indent-guides-highlighter-function 'my-highlighter)
+
   (setq highlight-indent-guides-method 'column)
   (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
@@ -447,7 +473,7 @@
 ;; Wrap lines at 80 characters
 (setq-default fill-column 79)
 (custom-set-faces
- '(fill-column-indicator ((t (:foreground "#e0e0e0")))))
+ '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3)))))
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
 ;; org mode customization
@@ -506,6 +532,7 @@
 (setq org-hide-emphasis-markers t)
 
 (use-package spaceline :defer 2
+  :disabled t
   :init
   (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
   (setq powerline-default-separator 'bar)

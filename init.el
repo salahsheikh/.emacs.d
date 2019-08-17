@@ -5,7 +5,12 @@
 (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
 (setq create-lockfiles nil)
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file 'noerror)
 
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+
+;; packages
 (eval-when-compile
     (require 'package)
     (setq package-enable-at-startup nil)
@@ -20,24 +25,19 @@
     (setq use-package-always-ensure t)
 
     (require 'use-package)
-    (require 'diminish))
+    (use-package diminish))
+;; end of packages
 
-(eval-after-load "subword" '(diminish 'subword-mode))
-(eval-after-load "abbrev" '(diminish 'abbrev-mode))
-(eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
-(eval-after-load "whitespace" '(diminish 'whitespace-mode))
-(eval-after-load "eldoc" '(diminish 'eldoc-mode))
-(add-hook 'emacs-lisp-mode-hook 
-  (lambda()
-    (setq mode-name "elisp"))) 
-
-;; necessary packages
+;; core packages
 (use-package evil
   :hook (after-init . evil-mode)
   :init
   (setq evil-want-integration t) 
   (setq evil-want-keybinding nil)
   :config
+  (setq evil-normal-state-tag "🅝")
+  (setq evil-insert-state-tag "🅘")
+  (setq evil-visual-state-tag "🅥")
   (add-hook 'org-capture-mode-hook 'evil-insert-state)
   (dolist (k
     '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]  
@@ -47,19 +47,37 @@
       [mouse-5] [down-mouse-5] [drag-mouse-5] [double-mouse-5] [triple-mouse-5]))
   (define-key evil-normal-state-map k 'ignore)))
 
-(use-package evil-collection :defer 2
+(use-package evil-collection
   :after evil
   :config
   (evil-collection-init))
 
-(use-package magit :defer 4
+(use-package git-gutter
+  :diminish git-gutter-mode
+  :config
+  ;; Ignore git status icons. Colors are enough.
+  (custom-set-variables
+   '(git-gutter:modified-sign " ") 
+   '(git-gutter:added-sign " ")   
+   '(git-gutter:deleted-sign " "))
+  (custom-set-variables
+   '(git-gutter:update-interval 0.01)
+   '(git-gutter:hide-gutter t))
+  (progn
+    (set-face-background 'git-gutter:deleted "dark red")
+    (set-face-background 'git-gutter:modified "steel blue")
+    (set-face-background 'git-gutter:added "dark green"))
+  (global-git-gutter-mode))
+
+(use-package magit
+  :defer t
   :after (evil git-gutter)
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
   (defun my-magit-mode-hook ()
     "Custom `magit-mode' behaviours."
-    (setq left-fringe-width 10
+    (setq left-fringe-width 20
           right-fringe-width 0))
   (add-hook 'with-editor-mode-hook 'evil-insert-state)
   (add-hook 'magit-post-refresh-hook
@@ -77,34 +95,6 @@
   (define-key evil-motion-state-map "gc" 'evil-avy-goto-char)
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
-
-(use-package ace-window :defer 2
-  :after evil
-  :custom-face
-  (aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 2.0))))
-  :config
-  (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
-
-(use-package switch-window
-  :after evil)
-
-(use-package git-gutter :defer 1
-  :diminish git-gutter-mode
-  :config
-  ;; Ignore git status icons. Colors are enough.
-  (custom-set-variables
-   '(git-gutter:modified-sign " ") 
-   '(git-gutter:added-sign " ")   
-   '(git-gutter:deleted-sign " "))
-  (custom-set-variables
-   '(git-gutter:update-interval 0.2)
-   '(git-gutter:hide-gutter t)
-   )
-  (progn
-    (set-face-background 'git-gutter:deleted "#f2bfb6")
-    (set-face-background 'git-gutter:modified "#c3d6e8")
-    (set-face-background 'git-gutter:added "#c9dec1"))
-  (global-git-gutter-mode))
 
 (use-package helm 
   :diminish helm-mode
@@ -158,147 +148,78 @@
   (define-key helm-map [escape] 'helm-keyboard-quit)
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
+  (defun helm-display-mode-line (source &optional force) (setq mode-line-format nil))
   (helm-mode 1))
 
 ;; fuzzier matching for helm
-(use-package helm-flx :defer 1
+(use-package helm-flx
   :after helm
   :config
   (helm-flx-mode +1))
 
-(use-package swiper-helm :defer 1
+(use-package swiper-helm
   :after helm
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer))
 
-(use-package helm-ag
-  :after (helm))
-
-(use-package projectile :defer 2
+(use-package ace-window
+  :after evil
+  :custom-face
+  (aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 2.0))))
   :config
-  (projectile-mode +1))
+  (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
 
-(use-package helm-projectile :defer 1
-  :after (helm))
-
-;; Moves selected region around.
-(use-package drag-stuff :defer 1
+(use-package drag-stuff
   :diminish drag-stuff-mode
   :bind (("M-<down>" . drag-stuff-down)
          ("M-<up>" . drag-stuff-up))
   :config
   (drag-stuff-global-mode))
 
+(require 'completion)
 
-(use-package yasnippet :defer 4
-  :diminish yas-minor-mode
+(use-package autorevert
   :config
-  (use-package yasnippet-snippets)
-  (use-package java-snippets)
-  (yas-global-mode 1))
+  (global-auto-revert-mode t))
 
-(use-package lsp-mode :defer 2
-  :after (evil yasnippet yasnippet-snippets lsp-java)
+(use-package elec-pair
   :config
-  (setq lsp-prefer-flymake nil)
-  (define-key evil-motion-state-map "gd" 'lsp-find-definition)
-  (add-hook 'python-mode-hook #'lsp-deferred)
-  (add-hook 'java-mode-hook #'lsp-deferred))
+  (electric-pair-mode +1))
 
-(use-package company :defer 6
-  :after yasnippet
-  :diminish company-mode
-  :config
-  ;(add-to-list 'company-backends 'company-files)
-  (use-package company-lsp 
-    :config
-    (setq company-lsp-enable-snippet t)
-    (setq lsp-enable-snippet t))
-
-  (push '(company-lsp) company-backends)
-
-  (defun user/enable-yas-for-backend (backend)
-    "Add yasnippet support for specified BACKEND."
-    (if (and (listp backend) (member 'company-yasnippet backend))
-        backend
-      (append (if (consp backend) backend (list backend))
-              '(:with company-yasnippet))))
-
-  ;; Enable for all company backends. Add to hook to prevent missed backends.
-  (add-hook 'yas-minor-mode-hook
-            (lambda()
-              (setq company-backends
-                    (mapcar #'user/enable-yas-for-backend company-backends))))
-
-  (setq company-idle-delay 0.01)
-  (setq company-echo-delay 0.01)
-  (setq company-show-numbers t)
-  (setq company-minimum-prefix-length 1)
-  (global-company-mode))
-
-(use-package company-flx :defer 1
-  :after (company)
-  :config
-  (company-flx-mode +1))
-
-(use-package flycheck :defer 1)
-
-(use-package helm-flycheck
-  :after (flycheck)
-  :init
-  (defvar helm-source-flycheck
-    '((name . "Flycheck")
-      (init . helm-flycheck-init)
-      (candidates . helm-flycheck-candidates)
-      (action-transformer helm-flycheck-action-transformer)
-      (action . (("Go to" . helm-flycheck-action-goto-error)))
-      (follow . 1))))
-
-(use-package lsp-ui 
-  :after (lsp-mode flycheck)
-  :config
-  (setq lsp-ui-doc-enable nil
-        lsp-ui-sideline-enable nil
-        lsp-ui-flycheck-enable t)
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-(use-package which-key :defer 8
+(use-package which-key
   :diminish which-key-mode
   :config
   (which-key-mode))
 
-;; end of necessary packages
+(use-package projectile :defer 2
+  :config
+  (projectile-mode +1))
 
-;; start of programming language specific packages
-(use-package rust-mode :defer t)
+(use-package helm-projectile :defer 1
+  :after helm)
+;; end of core packages
 
-(use-package lsp-java :defer 1)
-;; end of programming language specific packages
-
-(setq frame-resize-pixelwise t)
+;; ui customization
+(add-to-list 'default-frame-alist '(font . "DeJaVu Sans Mono-13"))
+(set-foreground-color "white")
+(set-background-color "black")
 
 (setq c-default-style "linux"
       c-basic-offset 4)
 
-;;; built-in packages
-;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
-
-(set-default 'indent-tabs-mode nil)
-(setq-default tab-width 4)
-
 (setq initial-frame-alist '((width . 90) (height . 50)))
 
+;; highlight the current line
+(use-package hl-line :defer 1
+  :config
+  (global-hl-line-mode +1))
+
+(blink-cursor-mode 0)
+
+;; prefer vertical splits
 (setq split-width-threshold nil)
 (setq split-height-threshold 0)
-
-(set-default 'truncate-lines nil)
-(add-hook 'prog-mode-hook #'toggle-truncate-lines)
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
-
-(use-package autorevert :defer 8
-  :config
-  (global-auto-revert-mode t))
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -313,15 +234,6 @@
   (setq show-paren-delay 0)
   (show-paren-mode t))
 
-(use-package elec-pair :defer 1
-  :config
-  (electric-pair-mode +1))
-
-;; highlight the current line
-(use-package hl-line :defer 1
-  :config
-  (global-hl-line-mode +1))
-
 (use-package highlight-indent-guides
   :diminish highlight-indent-guides-mode
   :config
@@ -335,39 +247,38 @@
   (setq highlight-indent-guides-method 'column)
   (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
-(use-package intellij-theme :init (load-theme 'intellij t))
+;; Normal scrolling
+(setq scroll-margin 10
+      scroll-step 1
+      scroll-conservatively 10000
+      scroll-preserve-screen-position 1)
 
-(when (member "DeJaVu Sans" (font-family-list))
-  (with-current-buffer (get-buffer " *Echo Area 0*")
-    (setq-local face-remapping-alist
-                '((default (:family "DeJaVu Sans") variable-pitch)))))
+(defun spacemacs//hide-cursor-in-helm-buffer ()
+  "Hide the cursor in helm buffers."
+  (with-helm-buffer
+    (setq cursor-in-non-selected-windows nil)))
+(add-hook 'helm-after-initialize-hook 
+          'spacemacs//hide-cursor-in-helm-buffer)
 
-;; display nice file path in headerline
-(setq-default header-line-format '(:eval
-                (if (and (not (string-suffix-p "*" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
-                    (if (eq ml-selected-window (selected-window))
-                        (propertize (get-buffer-title) 'face 'mode-line)
-                      (propertize (get-buffer-title) 'face 'mode-line-inactive)) nil)))
+(setq fast-but-imprecise-scrolling t)
 
-(defun get-buffer-title ()
-  (if (buffer-file-name)
-      (abbreviate-file-name (buffer-file-name))
-    (abbreviate-file-name (buffer-name))))
+(eval-after-load "subword" '(diminish 'subword-mode))
+(eval-after-load "abbrev" '(diminish 'abbrev-mode))
+(eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
+(eval-after-load "whitespace" '(diminish 'whitespace-mode))
+(eval-after-load "eldoc" '(diminish 'eldoc-mode))
+(add-hook 'emacs-lisp-mode-hook 
+  (lambda()
+    (setq mode-name "elisp"))) 
 
-(defvar ml-selected-window nil)
+(setq frame-resize-pixelwise t)
 
-(defun ml-record-selected-window ()
-  (setq ml-selected-window (selected-window)))
+(set-default 'truncate-lines nil)
+(add-hook 'prog-mode-hook #'toggle-truncate-lines)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
 
-(defun ml-update-all ()
-  (if (derived-mode-p 'prog-mode)
-      (setq left-fringe-width 0)
-    (setq left-fringe-width 5))
-  (force-mode-line-update t))
-
-(add-hook 'post-command-hook 'ml-record-selected-window)
-
-(add-hook 'buffer-list-update-hook 'ml-update-all)
+(set-default 'indent-tabs-mode nil)
+(setq-default tab-width 4)
 
 ;; if mouse is clicked on something, leave active minibuffer
 (defun stop-using-minibuffer ()
@@ -377,50 +288,34 @@
 
 (add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
 
-;; custom ctrl+backspace behavior
-(use-package s)
-(defun aborn/backward-kill-word ()
-  "Customize/Smart backward-kill-word. Author: Aborn Jiang"
-  (interactive)
-  (let* ((cp (point))
-         (backword)
-         (end)
-         (space-pos)
-         (backword-char (if (bobp)
-                            ""           ;; cursor in begin of buffer
-                          (buffer-substring cp (- cp 1)))))
-    (if (equal (length backword-char) (string-width backword-char))
-        (progn
-          (save-excursion
-            (setq backword (buffer-substring (point) (progn (forward-word -1) (point)))))
-          (setq ab/debug backword)
-          (save-excursion
-            (when (and backword          ;; when backword contains space
-                       (s-contains? " " backword))
-              (setq space-pos (ignore-errors (search-backward " ")))))
-          (save-excursion
-            (let* ((pos (ignore-errors (search-backward-regexp "\n")))
-                   (substr (when pos (buffer-substring pos cp))))
-              (when (or (and substr (s-blank? (s-trim substr)))
-                        (s-contains? "\n" backword))
-                (setq end pos))))
-          (if end
-              (kill-region cp end)
-            (if space-pos
-                (kill-region cp space-pos)
-              (backward-kill-word 1))))
-      (kill-region cp (- cp 1)))         ;; word is non-english word
-    ))
+(require 'fpath-header-line)
+(require 'c-backspace)
+(require 'better-symbols)
 
-(global-set-key  [C-backspace] 'aborn/backward-kill-word)
+;; Wrap lines at 80 characters
+(setq-default fill-column 79)
+(custom-set-faces
+ '(fill-column-indicator ((t (:foreground "gray30" :height 1.3)))))
+(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
-;; Normal scrolling
-(setq scroll-margin 10
-      scroll-step 1
-      scroll-conservatively 10000
-      scroll-preserve-screen-position 1)
+(set-face-attribute 'mode-line nil :font "DejaVu Sans-13")
 
-;; set the default encoding system
+(window-divider-mode)
+
+
+(when (member "DeJaVu Sans" (font-family-list))
+  (with-current-buffer (get-buffer " *Echo Area 0*")
+    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
+
+(setq auto-window-vscroll nil) 
+
+(set-face-attribute 'variable-pitch nil
+                    :family "Sans"
+                    :height 110
+                    :weight 'regular)
+;; end of ui customization
+
+;; utf-8 options
 (set-language-environment 'utf-8)
 (setq locale-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
@@ -429,156 +324,13 @@
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 (setq-default buffer-file-coding-system 'utf-8-auto-unix)
 
-;; make some symbols look better
-(add-hook 'prog-mode-hook #'prettify-symbols-mode)
-(setq prettify-symbols-unprettify-at-point 'right-edge)
-(setq inhibit-compacting-font-caches t)
+;; end of utf-8 options
 
-(add-hook 'prog-mode-hook
-        (lambda ()
-            (push '("lambda" . ?λ) prettify-symbols-alist)
-            (push '("return" . ?⮱) prettify-symbols-alist)
-            (push '("->" . ?🠆) prettify-symbols-alist)
-            (push '("=>" . ?⇒) prettify-symbols-alist)
-            (push '("!=" . ?≠) prettify-symbols-alist)
-            (push '("==" . ?⩵) prettify-symbols-alist)
-            (push '("<=" . ?≤) prettify-symbols-alist)
-            (push '(">=" . ?≥) prettify-symbols-alist)
-            (push '("pi". ?π) prettify-symbols-alist)
-            (push '("&&" . ?∧) prettify-symbols-alist)
-            (push '("||" . ?∨) prettify-symbols-alist)))
-
-(add-hook 'python-mode-hook
-        (lambda ()
-            (push '("def"    . ?ƒ) prettify-symbols-alist)
-            (push '("sum"    . ?Σ) prettify-symbols-alist)
-            (push '("**2"    . ?²) prettify-symbols-alist)
-            (push '("**3"    . ?³) prettify-symbols-alist)
-            (push '("None"   . ?∅) prettify-symbols-alist)
-            (push '("in"     . ?∈) prettify-symbols-alist)
-            (push '("not in" . ?∉) prettify-symbols-alist)
-            (push '("{}" . (?⦃ (Br . Bl) ?⦄)) prettify-symbols-alist)))
-
-(add-hook 'rust-mode-hook
-        (lambda ()
-            (push '("fn"    . ?ƒ) prettify-symbols-alist)
-            (push '("::"    . ?∷) prettify-symbols-alist)))
-
-(when (member "Symbola" (font-family-list))
-    (setq use-default-font-for-symbols nil)
-    (set-fontset-font "fontset-default" 'unicode (font-spec :name "Symbola"))
-    (set-fontset-font "fontset-default" 'unicode-bmp (font-spec :name "Symbola")))
-
-
-;; Wrap lines at 80 characters
-(setq-default fill-column 79)
-(custom-set-faces
- '(fill-column-indicator ((t (:foreground "#e0e0e0" :height 1.3)))))
-(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
-
-;; org mode customization
-(set-face-attribute 'variable-pitch nil
-                    :family "Sans"
-                    :height 110
-                    :weight 'regular)
-
-(add-hook 'org-mode 'variable-pitch-mode)
-
-(setq org-directory "~/org")
-(setq org-default-notes-file "~/org/notes.org")
-
-(setq org-agenda-files '("~/org"))
-
-(global-set-key (kbd "C-c c") 'org-capture)
-
-(use-package org-bullets
-  :config
-  (add-hook 'org-mode-hook (lambda() (org-bullets-mode 1))))
-
-(setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-              (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
-
-(setq org-todo-keyword-faces
-      (quote (("TODO" :foreground "red" :weight bold)
-              ("NEXT" :foreground "blue" :weight bold)
-              ("DONE" :foreground "forest green" :weight bold)
-              ("WAITING" :foreground "orange" :weight bold)
-              ("HOLD" :foreground "magenta" :weight bold)
-              ("CANCELLED" :foreground "forest green" :weight bold)
-              ("MEETING" :foreground "forest green" :weight bold)
-              ("PHONE" :foreground "forest green" :weight bold))))
-
-(setq org-todo-state-tags-triggers
-      (quote (("CANCELLED" ("CANCELLED" . t))
-              ("WAITING" ("WAITING" . t))
-              ("HOLD" ("WAITING") ("HOLD" . t))
-              (done ("WAITING") ("HOLD"))
-              ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
-              ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
-              ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
-
-(setq org-capture-templates
-      '(("t" "Todo" entry (file+headline "~/org/todo.org" "Tasks")
-         "* TODO %?\n %i")
-        ("m" "Meeting" entry (file+headline "~/org/todo.org" "Meetings")
-         "* MEETING WITH %?\n%i\nSCHEDULED: %^T")))
-
-(use-package mixed-pitch 
-  :hook
-  ;; If you want it in all text modes:
-  (org-mode . mixed-pitch-mode))
-
-(setq org-hide-emphasis-markers t)
-
-(use-package spaceline :defer 2
-  :disabled t
-  :init
-  (remove-hook 'focus-out-hook 'powerline-unset-selected-window)
-  (setq powerline-default-separator 'bar)
-  (setq evil-normal-state-tag "🅝")
-  (setq evil-insert-state-tag "🅘")
-  (setq evil-visual-state-tag "🅥")
-  :config
-  (require 'spaceline-config)
-  (spaceline-spacemacs-theme)
-  (spaceline-toggle-buffer-id-off)
-  (spaceline-helm-mode))
-
-(use-package powerline
-  :after (spaceline spaceline-config)
-  :config
-  (setq powerline-height (truncate (* 1.0 (frame-char-height)))))
-
-(when (member "DeJaVu Sans" (font-family-list))
-  (with-current-buffer (get-buffer " *Echo Area 0*")
-    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
-
-(setq auto-window-vscroll nil) 
-
-;; disablemouse interaction
-(dolist (k mwheel-installed-bindings)
-  (global-set-key k 'ignore))
-
-(defun spacemacs//hide-cursor-in-helm-buffer ()
-  "Hide the cursor in helm buffers."
-  (with-helm-buffer
-    (setq cursor-in-non-selected-windows nil)))
-(add-hook 'helm-after-initialize-hook 
-          'spacemacs//hide-cursor-in-helm-buffer)
-
-(blink-cursor-mode 0)
-;; end of ui customization
-
-(setq custom-file "~/.emacs.d/custom.el")
-(load custom-file 'noerror)
-
-(setq gc-cons-threshold 262144)
-
-(setq-default inhibit-message nil)
+(require 'custom-org)
+;; end of config
 
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-echo-area-message t)
 (setq initial-scratch-message nil)
 
-(message (emacs-init-time))
+(setq gc-cons-threshold 262144)

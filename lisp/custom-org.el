@@ -38,8 +38,6 @@
         ("m" "Meeting" entry (file+headline "~/org/todo.org" "Meetings")
          "* MEETING WITH %?\n%i\nSCHEDULED: %^T")))
 
-(add-hook 'org-mode 'variable-pitch-mode)
-
 (use-package mixed-pitch 
   :hook
   ;; If you want it in all text modes:

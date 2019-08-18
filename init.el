@@ -10,6 +10,10 @@
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
+(defvar mono-font "Monaco-13" "Default font for programming.")
+(defvar sans-font "DeJaVu Sans-13" "Default font for normal text.")
+(defvar symbol-font "Symbola" "Default font for special symbols.")
+
 ;; packages
 (eval-when-compile
     (require 'package)
@@ -148,7 +152,7 @@
   (define-key helm-map [escape] 'helm-keyboard-quit)
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
-  (defun helm-display-mode-line (source &optional force) (setq mode-line-format nil))
+  (defun helm-display-mode-line (source &optional force) (setq mode-line-format " "))
   (helm-mode 1))
 
 ;; fuzzier matching for helm
@@ -201,7 +205,7 @@
 ;; end of core packages
 
 ;; ui customization
-(add-to-list 'default-frame-alist '(font . "DeJaVu Sans Mono-13"))
+(add-to-list 'default-frame-alist `(font . ,mono-font))
 (set-foreground-color "white")
 (set-background-color "black")
 
@@ -295,24 +299,22 @@
 ;; Wrap lines at 80 characters
 (setq-default fill-column 79)
 (custom-set-faces
- '(fill-column-indicator ((t (:foreground "gray30" :height 1.3)))))
+ `(fill-column-indicator ((t (:foreground "gray30" :family ,symbol-font :height 1.6)))))
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
-(set-face-attribute 'mode-line nil :font "DejaVu Sans-13")
+(set-face-attribute 'mode-line nil :font sans-font)
 
 (window-divider-mode)
 
 
-(when (member "DeJaVu Sans" (font-family-list))
+(when (member sans-font (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
-    (setq-local face-remapping-alist '((default (:family "DeJaVu Sans") variable-pitch)))))
+    (setq-local face-remapping-alist '((default (:family sans-font) variable-pitch)))))
 
 (setq auto-window-vscroll nil) 
 
-(set-face-attribute 'variable-pitch nil
-                    :family "Sans"
-                    :height 110
-                    :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font sans-font)
+
 ;; end of ui customization
 
 ;; utf-8 options

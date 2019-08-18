@@ -1,5 +1,5 @@
 ;; make some symbols look better
-(add-hook 'prog-mode-hook #'prettify-symbols-mode)
+(global-prettify-symbols-mode +1)
 (setq prettify-symbols-unprettify-at-point 'right-edge)
 (setq inhibit-compacting-font-caches t)
 
@@ -30,12 +30,11 @@
 
 (add-hook 'rust-mode-hook
         (lambda ()
-            (push '("fn"    . ?ƒ) prettify-symbols-alist)
-            (push '("::"    . ?∷) prettify-symbols-alist)))
+            (push '("fn"    . ?ƒ) prettify-symbols-alist)))
 
-(when (member "Symbola" (font-family-list))
+(when (member symbol-font (font-family-list))
     (setq use-default-font-for-symbols nil)
-    (set-fontset-font "fontset-default" 'unicode (font-spec :name "Symbola"))
-    (set-fontset-font "fontset-default" 'unicode-bmp (font-spec :name "Symbola")))
+    (set-fontset-font "fontset-default" 'unicode (font-spec :name symbol-font))
+    (set-fontset-font "fontset-default" 'unicode-bmp (font-spec :name symbol-font)))
 
 (provide 'better-symbols)

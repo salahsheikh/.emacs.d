@@ -19,4 +19,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 2.0))))
- '(fill-column-indicator ((t (:foreground "gray30" :family "Symbola" :height 1.6)))))
+ '(fill-column-indicator ((t (:foreground "gray30" :family "Symbola" :height 1.6))))
+ '(font-lock-keyword-face ((t (:foreground "deep sky blue"))))
+ '(link ((t (:foreground "light sky blue" :underline t))))
+ '(minibuffer-prompt ((t (:foreground "light sky blue")))))

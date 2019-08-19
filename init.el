@@ -71,20 +71,13 @@
     (set-face-background 'git-gutter:added "dark green"))
   (global-git-gutter-mode))
 
-(use-package magit
-  :defer t
+(use-package magit :defer t
   :after (evil git-gutter)
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
-  ;; (defun my-magit-mode-hook ()
-  ;;   "Custom `magit-mode' behaviours."
-  ;;   (setq left-fringe-width 5))
   (add-hook 'with-editor-mode-hook 'evil-insert-state)
-  (add-hook 'magit-post-refresh-hook
-            #'git-gutter:update-all-windows)
-  ;; (add-hook 'magit-mode-hook 'my-magit-mode-hook)
-  )
+  (add-hook 'magit-post-refresh-hook #'git-gutter:update-all-windows))
 
 (use-package evil-magit
   :after magit)
@@ -122,13 +115,14 @@
   (defun helm-dashboard()
     "Author: MikeTheTall"
     (if (< (length command-line-args) 2)
-    (let ((helm-full-frame-orig helm-full-frame) (helm-mini-default-sources-orig helm-mini-default-sources))
-        (setq helm-full-frame t)
-        ;; (setq helm-mini-default-sources `(helm-source-bookmarks helm-source-recentf))
-        ;; (helm-mini)
-        ;; (setq helm-mini-default-sources helm-mini-default-sources-orig)
-        (helm-mini)
-        (setq helm-full-frame helm-full-frame-orig))))
+        (let ((helm-full-frame-orig helm-full-frame)
+              (helm-mini-default-sources-orig helm-mini-default-sources))
+          (setq helm-full-frame t)
+          ;; (setq helm-mini-default-sources `(helm-source-bookmarks helm-source-recentf))
+          ;; (helm-mini)
+          ;; (setq helm-mini-default-sources helm-mini-default-sources-orig)
+          (helm-mini)
+          (setq helm-full-frame helm-full-frame-orig))))
   (add-hook 'window-setup-hook (lambda () (helm-dashboard)))
   (setq helm-candidate-number-limit 100)
   (global-set-key (kbd "M-x") #'helm-M-x)
@@ -136,7 +130,7 @@
   (global-set-key (kbd "C-x C-b") #'helm-buffers-list)
 
   (defun helm-skip-dots (old-func &rest args)
-    "Skip . and .. initially in helm-find-files.  First call OLD-FUNC with ARGS."
+    "Skip . and .. initially in helm-find-files. First call OLD-FUNC with ARGS."
     (apply old-func args)
     (let ((sel (helm-get-selection)))
       (if (and (stringp sel) (string-match "/\\.$" sel))
@@ -152,7 +146,8 @@
   (helm-adaptive-mode 1)
 
   ;; hide helm modeline
-  ;;(defun helm-display-mode-line (source &optional force) (setq mode-line-format " "))
+  ;;(defun helm-display-mode-line (source &optional force)
+  ;; (setq mode-line-format " "))
   (helm-mode 1))
 
 ;; fuzzier matching for helm
@@ -231,7 +226,7 @@
 (setq initial-frame-alist '((width . 90) (height . 50)))
 
 ;; highlight the current line
-(use-package hl-line :defer 1
+(use-package hl-line 
   :config
   (global-hl-line-mode +1))
 

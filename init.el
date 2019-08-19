@@ -118,10 +118,11 @@
         (let ((helm-full-frame-orig helm-full-frame)
               (helm-mini-default-sources-orig helm-mini-default-sources))
           (setq helm-full-frame t)
-          ;; (setq helm-mini-default-sources `(helm-source-bookmarks helm-source-recentf))
-          ;; (helm-mini)
-          ;; (setq helm-mini-default-sources helm-mini-default-sources-orig)
+          (setq helm-mini-default-sources `(helm-source-bookmarks
+                                            helm-source-recentf
+                                            helm-source-projectile-projects))
           (helm-mini)
+          (setq helm-mini-default-sources helm-mini-default-sources-orig)
           (setq helm-full-frame helm-full-frame-orig))))
   (add-hook 'window-setup-hook (lambda () (helm-dashboard)))
   (setq helm-candidate-number-limit 100)

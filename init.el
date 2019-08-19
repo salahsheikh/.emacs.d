@@ -65,8 +65,8 @@
    '(git-gutter:added-sign " ")   
    '(git-gutter:deleted-sign " "))
   (custom-set-variables
-   '(git-gutter:update-interval 0.01)
    '(git-gutter:hide-gutter t))
+  (add-hook 'after-save-hook #'git-gutter:update-all-windows)
   (progn
     (set-face-background 'git-gutter:deleted "dark red")
     (set-face-background 'git-gutter:modified "steel blue")
@@ -220,6 +220,12 @@
 ;;   (add-hook 'dired-mode-hook #'hide-mode-line-mode)
 ;;   (add-hook 'ranger-preview-dir-hook #'hide-mode-line-mode)
 ;;   (add-hook 'ranger-mode-load-hook #'hide-mode-line-mode))
+
+(use-package expand-region
+  :after evil
+  :config
+  (evil-global-set-key 'normal "ze" 'er/expand-region))
+
 ;; end of core packages
 
 ;; ui customization

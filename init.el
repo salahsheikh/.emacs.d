@@ -152,7 +152,9 @@
   (define-key helm-map [escape] 'helm-keyboard-quit)
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
-  (defun helm-display-mode-line (source &optional force) (setq mode-line-format " "))
+
+  ;; hide helm modeline
+  ;;(defun helm-display-mode-line (source &optional force) (setq mode-line-format " "))
   (helm-mode 1))
 
 ;; fuzzier matching for helm
@@ -202,6 +204,18 @@
 
 (use-package helm-projectile :defer 1
   :after helm)
+
+
+;; prefer dired for now
+;; (use-package ranger
+;;   :config
+;;   (setq ranger-hide-cursor nil))
+
+;; (use-package hide-mode-line
+;;   :config
+;;   (add-hook 'dired-mode-hook #'hide-mode-line-mode)
+;;   (add-hook 'ranger-preview-dir-hook #'hide-mode-line-mode)
+;;   (add-hook 'ranger-mode-load-hook #'hide-mode-line-mode))
 ;; end of core packages
 
 ;; ui customization
@@ -314,6 +328,10 @@
 (setq auto-window-vscroll nil) 
 
 (set-face-attribute 'variable-pitch nil :font sans-font)
+
+(use-package symon
+  :config
+  (symon-mode))
 
 ;; end of ui customization
 

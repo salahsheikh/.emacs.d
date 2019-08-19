@@ -169,12 +169,16 @@
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer))
 
-(use-package ace-window
+(use-package switch-window
   :after evil
-  :custom-face
-  (aw-leading-char-face ((t (:inherit font-lock-builtin-face :bold t :height 2.0))))
   :config
-  (evil-global-set-key 'normal "\C-w\C-w" 'ace-window))
+  (define-advice switch-window (:around (fun &rest r) cursor-stuff)
+    (progn
+      (let ((cursor-in-non-selected-windows nil))
+        (apply fun r))))
+  (setq switch-window-shortcut-style 'qwerty)
+  (setq switch-window-multiple-frames t)
+  (evil-global-set-key 'normal "\C-w\C-w" 'switch-window))
 
 (use-package drag-stuff
   :diminish drag-stuff-mode
@@ -245,9 +249,6 @@
 (setq ring-bell-function 'ignore)
 
 (use-package paren 
-  ;; intellij theme specific
-  ;:custom-face
-  ;(show-paren-match ((t (:background "powder blue"))))
   :config
   (setq show-paren-delay 0)
   (show-paren-mode t))
@@ -292,8 +293,9 @@
 (setq frame-resize-pixelwise t)
 
 (set-default 'truncate-lines nil)
-(add-hook 'prog-mode-hook #'toggle-truncate-lines)
+(add-hook 'text-mode-hook #'toggle-truncate-lines)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(add-hook 'markdown-mode-hook #'display-line-numbers-mode)
 
 (set-default 'indent-tabs-mode nil)
 (setq-default tab-width 4)

@@ -1,11 +1,11 @@
-(use-package yasnippet :defer 4
+(use-package yasnippet :defer 1
   :diminish yas-minor-mode
   :config
   (use-package yasnippet-snippets)
   (use-package java-snippets)
   (yas-global-mode 1))
 
-(use-package lsp-mode :defer 2
+(use-package lsp-mode 
   :after (evil yasnippet yasnippet-snippets lsp-java)
   :config
   (setq lsp-prefer-flymake nil)
@@ -13,7 +13,7 @@
   (add-hook 'python-mode-hook #'lsp-deferred)
   (add-hook 'java-mode-hook #'lsp-deferred))
 
-(use-package company :defer 6
+(use-package company 
   :after yasnippet
   :diminish company-mode
   :config
@@ -44,12 +44,12 @@
   (setq company-minimum-prefix-length 1)
   (global-company-mode))
 
-(use-package company-flx :defer 1
+(use-package company-flx 
   :after (company)
   :config
   (company-flx-mode +1))
 
-(use-package flycheck :defer 1)
+(use-package flycheck)
 
 (use-package helm-flycheck
   :after (flycheck)

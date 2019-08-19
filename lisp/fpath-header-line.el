@@ -19,6 +19,7 @@
   (if (derived-mode-p 'prog-mode)
       (setq left-fringe-width 0)
     (setq left-fringe-width 5))
+  (setq right-fringe-width 0)
   (force-mode-line-update t))
 
 (add-hook 'post-command-hook 'ml-record-selected-window)

@@ -60,12 +60,10 @@
   :diminish git-gutter-mode
   :config
   ;; Ignore git status icons. Colors are enough.
-  (custom-set-variables
-   '(git-gutter:modified-sign " ")
-   '(git-gutter:added-sign " ")
-   '(git-gutter:deleted-sign " "))
-  (custom-set-variables
-   '(git-gutter:hide-gutter t))
+  (setq git-gutter:added-sign " ")
+  (setq git-gutter:deleted-sign " ")
+  (setq git-gutter:modified-sign " ")
+  (setq git-gutter:hide-gutter t)
   (add-hook 'after-save-hook #'git-gutter:update-all-windows)
   (progn
     (set-face-background 'git-gutter:deleted "dark red")

@@ -36,7 +36,7 @@
 (use-package evil
   :hook (after-init . evil-mode)
   :init
-  (setq evil-want-integration t) 
+  (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   :config
   (setq evil-normal-state-tag "🅝")
@@ -44,7 +44,7 @@
   (setq evil-visual-state-tag "🅥")
   (add-hook 'org-capture-mode-hook 'evil-insert-state)
   (dolist (k
-    '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]  
+    '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]
       [mouse-2] [down-mouse-2] [drag-mouse-2] [double-mouse-2] [triple-mouse-2]
       [mouse-3] [down-mouse-3] [drag-mouse-3] [double-mouse-3] [triple-mouse-3]
       [mouse-4] [down-mouse-4] [drag-mouse-4] [double-mouse-4] [triple-mouse-4]
@@ -61,8 +61,8 @@
   :config
   ;; Ignore git status icons. Colors are enough.
   (custom-set-variables
-   '(git-gutter:modified-sign " ") 
-   '(git-gutter:added-sign " ")   
+   '(git-gutter:modified-sign " ")
+   '(git-gutter:added-sign " ")
    '(git-gutter:deleted-sign " "))
   (custom-set-variables
    '(git-gutter:hide-gutter t))
@@ -79,16 +79,16 @@
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
-  (defun my-magit-mode-hook ()
-    "Custom `magit-mode' behaviours."
-    (setq left-fringe-width 20
-          right-fringe-width 0))
+  ;; (defun my-magit-mode-hook ()
+  ;;   "Custom `magit-mode' behaviours."
+  ;;   (setq left-fringe-width 5))
   (add-hook 'with-editor-mode-hook 'evil-insert-state)
   (add-hook 'magit-post-refresh-hook
             #'git-gutter:update-all-windows)
-  (add-hook 'magit-mode-hook 'my-magit-mode-hook))
+  ;; (add-hook 'magit-mode-hook 'my-magit-mode-hook)
+  )
 
-(use-package evil-magit 
+(use-package evil-magit
   :after magit)
 
 (use-package avy
@@ -100,7 +100,7 @@
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
 
-(use-package helm 
+(use-package helm
   :diminish helm-mode
   :init
   (setq helm-M-x-fuzzy-match t
@@ -202,24 +202,18 @@
   :config
   (which-key-mode))
 
-(use-package projectile :defer 2
+(use-package projectile
   :config
   (projectile-mode +1))
 
-(use-package helm-projectile :defer 1
+(use-package helm-projectile
   :after helm)
 
+(use-package neotree :defer t)
 
-;; prefer dired for now
-;; (use-package ranger
-;;   :config
-;;   (setq ranger-hide-cursor nil))
-
-;; (use-package hide-mode-line
-;;   :config
-;;   (add-hook 'dired-mode-hook #'hide-mode-line-mode)
-;;   (add-hook 'ranger-preview-dir-hook #'hide-mode-line-mode)
-;;   (add-hook 'ranger-mode-load-hook #'hide-mode-line-mode))
+(use-package hide-mode-line
+  :config
+  (add-hook 'neotree-mode-hook #'hide-mode-line-mode))
 
 (use-package expand-region
   :after evil
@@ -254,7 +248,7 @@
 (setq visible-bell t)
 (setq ring-bell-function 'ignore)
 
-(use-package paren 
+(use-package paren
   :config
   (setq show-paren-delay 0)
   (show-paren-mode t))
@@ -282,7 +276,7 @@
   "Hide the cursor in helm buffers."
   (with-helm-buffer
     (setq cursor-in-non-selected-windows nil)))
-(add-hook 'helm-after-initialize-hook 
+(add-hook 'helm-after-initialize-hook
           'spacemacs//hide-cursor-in-helm-buffer)
 
 (setq fast-but-imprecise-scrolling t)
@@ -292,14 +286,14 @@
 (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
 (eval-after-load "whitespace" '(diminish 'whitespace-mode))
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
-(add-hook 'emacs-lisp-mode-hook 
+(add-hook 'emacs-lisp-mode-hook
   (lambda()
-    (setq mode-name "elisp"))) 
+    (setq mode-name "elisp")))
 
 (setq frame-resize-pixelwise t)
 
-(set-default 'truncate-lines nil)
-(add-hook 'text-mode-hook #'toggle-truncate-lines)
+(set-default 'truncate-lines t)
+(add-hook 'after-init-hook #'toggle-truncate-lines)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (add-hook 'markdown-mode-hook #'display-line-numbers-mode)
 
@@ -333,7 +327,7 @@
   (with-current-buffer (get-buffer " *Echo Area 0*")
     (setq-local face-remapping-alist '((default (:family sans-font) variable-pitch)))))
 
-(setq auto-window-vscroll nil) 
+(setq auto-window-vscroll nil)
 
 (set-face-attribute 'variable-pitch nil :font sans-font)
 

@@ -284,6 +284,10 @@
   (lambda()
     (setq mode-name "elisp")))
 
+(add-hook 'python-mode-hook
+  (lambda()
+    (setq mode-name "py")))
+
 (setq frame-resize-pixelwise t)
 
 (set-default 'truncate-lines t)
@@ -328,6 +332,12 @@
 (use-package symon
   :config
   (symon-mode))
+
+(setq-default
+ mode-line-mule-info nil
+ mode-line-front-space nil
+ mode-line-modified nil
+ mode-line-remote nil)
 
 ;; end of ui customization
 

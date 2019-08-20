@@ -42,6 +42,18 @@
   (setq evil-normal-state-tag "🅝")
   (setq evil-insert-state-tag "🅘")
   (setq evil-visual-state-tag "🅥")
+  (defun clear-shell()
+    "docstring"
+    (interactive)
+    (if (equal major-mode 'eshell-mode)
+        (progn
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (eshell-send-input)))
+      (progn
+        (comint-clear-buffer)))
+    )
+  (evil-ex-define-cmd "clear" #'clear-shell)
   (add-hook 'org-capture-mode-hook 'evil-insert-state)
   (dolist (k
     '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]
@@ -214,6 +226,47 @@
   :config
   (evil-global-set-key 'normal "ze" 'er/expand-region))
 
+(if (not (equal module-file-suffix nil))
+    (use-package vterm
+      :after evil
+      :load-path "~/emacs-libvterm"
+      :config
+      (add-hook 'vterm-mode-hook
+                (lambda ()
+                  (setq-local evil-insert-state-cursor 'box)
+                  (evil-insert-state)))
+
+      (define-key vterm-mode-map [return]                      #'vterm-send-return)
+
+      (setq vterm-keymap-exceptions nil)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
+      (define-key vterm-mode-map (kbd "C-<backspace>") 'vterm-send-meta-backspace)
+      (evil-define-key 'normal vterm-mode-map (kbd "C-<backspace>")    #'vterm-send-meta-backspace)
+      (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+      (evil-define-key 'normal vterm-mode-map (kbd ",c")       #'multi-libvterm)
+      (evil-define-key 'normal vterm-mode-map (kbd ",n")       #'multi-libvterm-next)
+      (evil-define-key 'normal vterm-mode-map (kbd ",p")       #'multi-libvterm-prev)
+      (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
+      (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
+	  (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume)))
+
 ;; end of core packages
 
 ;; ui customization
@@ -228,8 +281,7 @@
 
 ;; highlight the current line
 (use-package hl-line 
-  :config
-  (global-hl-line-mode +1))
+  :hook (prog-mode . hl-line-mode))
 
 (blink-cursor-mode 0)
 

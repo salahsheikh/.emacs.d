@@ -29,7 +29,13 @@
     (setq use-package-always-ensure t)
 
     (require 'use-package)
-    (use-package diminish))
+    (use-package diminish
+      :config
+      (eval-after-load "subword" '(diminish 'subword-mode))
+      (eval-after-load "abbrev" '(diminish 'abbrev-mode))
+      (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
+      (eval-after-load "whitespace" '(diminish 'whitespace-mode))
+      (eval-after-load "eldoc" '(diminish 'eldoc-mode))))
 ;; end of packages
 
 ;; core packages
@@ -189,7 +195,9 @@
 (use-package drag-stuff
   :diminish drag-stuff-mode
   :bind (("M-<down>" . drag-stuff-down)
-         ("M-<up>" . drag-stuff-up))
+         ("M-<up>" . drag-stuff-up)
+         ("M-<left>" . drag-stuff-left)
+         ("M-<right>" . drag-stuff-right))
   :config
   (drag-stuff-global-mode))
 
@@ -327,11 +335,6 @@
 
 (setq fast-but-imprecise-scrolling t)
 
-(eval-after-load "subword" '(diminish 'subword-mode))
-(eval-after-load "abbrev" '(diminish 'abbrev-mode))
-(eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
-(eval-after-load "whitespace" '(diminish 'whitespace-mode))
-(eval-after-load "eldoc" '(diminish 'eldoc-mode))
 (add-hook 'emacs-lisp-mode-hook
   (lambda()
     (setq mode-name "elisp")))

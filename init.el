@@ -16,26 +16,32 @@
 
 ;; packages
 (eval-when-compile
-    (require 'package)
-    (setq package-enable-at-startup nil)
-    (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-    (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-    (package-initialize)
+  (require 'package)
+  (setq package-enable-at-startup nil)
+  (setq package-archives
+        '(("GNU ELPA"     . "https://elpa.gnu.org/packages/")
+          ("MELPA Stable" . "https://stable.melpa.org/packages/")
+          ("MELPA"        . "https://melpa.org/packages/"))
+        package-archive-priorities
+        '(("GNU ELPA"     . 10)
+          ("MELPA Stable" . 5)
+          ("MELPA"        . 0)))
+  (package-initialize)
 
-    (unless (package-installed-p 'use-package)
+  (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
 
-    (setq use-package-always-ensure t)
+  (setq use-package-always-ensure t)
 
-    (require 'use-package)
-    (use-package diminish
-      :config
-      (eval-after-load "subword" '(diminish 'subword-mode))
-      (eval-after-load "abbrev" '(diminish 'abbrev-mode))
-      (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
-      (eval-after-load "whitespace" '(diminish 'whitespace-mode))
-      (eval-after-load "eldoc" '(diminish 'eldoc-mode))))
+  (require 'use-package)
+  (use-package diminish
+    :config
+    (eval-after-load "subword" '(diminish 'subword-mode))
+    (eval-after-load "abbrev" '(diminish 'abbrev-mode))
+    (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
+    (eval-after-load "whitespace" '(diminish 'whitespace-mode))
+    (eval-after-load "eldoc" '(diminish 'eldoc-mode))))
 ;; end of packages
 
 ;; core packages
@@ -62,12 +68,12 @@
   (evil-ex-define-cmd "clear" #'clear-shell)
   (add-hook 'org-capture-mode-hook 'evil-insert-state)
   (dolist (k
-    '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]
-      [mouse-2] [down-mouse-2] [drag-mouse-2] [double-mouse-2] [triple-mouse-2]
-      [mouse-3] [down-mouse-3] [drag-mouse-3] [double-mouse-3] [triple-mouse-3]
-      [mouse-4] [down-mouse-4] [drag-mouse-4] [double-mouse-4] [triple-mouse-4]
-      [mouse-5] [down-mouse-5] [drag-mouse-5] [double-mouse-5] [triple-mouse-5]))
-  (define-key evil-normal-state-map k 'ignore)))
+           '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]
+             [mouse-2] [down-mouse-2] [drag-mouse-2] [double-mouse-2] [triple-mouse-2]
+             [mouse-3] [down-mouse-3] [drag-mouse-3] [double-mouse-3] [triple-mouse-3]
+             [mouse-4] [down-mouse-4] [drag-mouse-4] [double-mouse-4] [triple-mouse-4]
+             [mouse-5] [down-mouse-5] [drag-mouse-5] [double-mouse-5] [triple-mouse-5]))
+    (define-key evil-normal-state-map k 'ignore)))
 
 (use-package evil-collection
   :after evil
@@ -113,22 +119,22 @@
   :diminish helm-mode
   :init
   (setq helm-M-x-fuzzy-match t
-	helm-mode-fuzzy-match t
-	helm-buffers-fuzzy-matching t
-	helm-recentf-fuzzy-match t
-	helm-locate-fuzzy-match t
-	helm-semantic-fuzzy-match t
-	helm-imenu-fuzzy-match t
-	helm-completion-in-region-fuzzy-match t
-    helm-follow-mode-persistent t
-    helm-quick-update t
-	helm-candidate-number-list 150
-	helm-split-window-in-side-p t
-	helm-move-to-line-cycle-in-source t
-	helm-echo-input-in-header-line t
-	helm-ff-skip-boring-files t
-	helm-autoresize-max-height 0
-	helm-autoresize-min-height 20)
+        helm-mode-fuzzy-match t
+        helm-buffers-fuzzy-matching t
+        helm-recentf-fuzzy-match t
+        helm-locate-fuzzy-match t
+        helm-semantic-fuzzy-match t
+        helm-imenu-fuzzy-match t
+        helm-completion-in-region-fuzzy-match t
+        helm-follow-mode-persistent t
+        helm-quick-update t
+        helm-candidate-number-list 150
+        helm-split-window-in-side-p t
+        helm-move-to-line-cycle-in-source t
+        helm-echo-input-in-header-line t
+        helm-ff-skip-boring-files t
+        helm-autoresize-max-height 0
+        helm-autoresize-min-height 20)
   :config
   (defun helm-dashboard()
     "Author: MikeTheTall"
@@ -142,7 +148,7 @@
           (helm-mini)
           (setq helm-mini-default-sources helm-mini-default-sources-orig)
           (setq helm-full-frame helm-full-frame-orig))))
-  (add-hook 'window-setup-hook (lambda () (helm-dashboard)))
+  (add-hook 'after-init-hook #'helm-dashboard)
   (setq helm-candidate-number-limit 100)
   (global-set-key (kbd "M-x") #'helm-M-x)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
@@ -218,7 +224,9 @@
 
 (use-package projectile
   :config
-  (projectile-mode +1))
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-enable-caching t)
+  (projectile-global-mode))
 
 (use-package helm-projectile
   :after helm)
@@ -273,19 +281,19 @@
       (evil-define-key 'normal vterm-mode-map (kbd ",p")       #'multi-libvterm-prev)
       (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
       (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
-	  (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume)))
+      (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume)))
 
 ;; end of core packages
 
 ;; ui customization
-(add-to-list 'default-frame-alist `(font . ,mono-font))
+(set-face-attribute 'default nil :font mono-font)
 (set-foreground-color "white")
 (set-background-color "black")
 
 (setq c-default-style "linux"
       c-basic-offset 4)
 
-(setq initial-frame-alist '((width . 90) (height . 50)))
+(setq default-frame-alist '((width . 90) (height . 50)))
 
 ;; highlight the current line
 (use-package hl-line 
@@ -336,12 +344,12 @@
 (setq fast-but-imprecise-scrolling t)
 
 (add-hook 'emacs-lisp-mode-hook
-  (lambda()
-    (setq mode-name "elisp")))
+          (lambda()
+            (setq mode-name "elisp")))
 
 (add-hook 'python-mode-hook
-  (lambda()
-    (setq mode-name "py")))
+          (lambda()
+            (setq mode-name "py")))
 
 (setq frame-resize-pixelwise t)
 

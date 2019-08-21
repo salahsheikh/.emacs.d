@@ -402,6 +402,12 @@
  mode-line-modified nil
  mode-line-remote nil)
 
+(setq whitespace-display-mappings
+       ;; all numbers are Unicode codepoint in decimal. try (insert-char 182 ) to see it
+      '((tab-mark 9 [8677 9] [92 9]) ; 9 TAB, 9655 WHITE RIGHT-POINTING TRIANGLE 「▷」
+        ))
+
+(setq show-trailing-whitespace t)
 ;; end of ui customization
 
 ;; utf-8 options

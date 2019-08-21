@@ -24,7 +24,8 @@
     (setq company-lsp-enable-snippet t)
     (setq lsp-enable-snippet t))
 
-  (setq-default company-backends '((company-files)
+  (setq-default company-backends '((company-elisp)
+                                   (company-files)
                                    (company-lsp)))
 
   ;; yasnippet specific code

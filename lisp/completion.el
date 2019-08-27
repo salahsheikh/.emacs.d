@@ -53,11 +53,6 @@
   (setq company-tooltip-limit 5)
   (global-company-mode))
 
-(use-package company-flx 
-  :after (company)
-  :config
-  (company-flx-mode +1))
-
 (use-package flycheck)
 
 (use-package helm-flycheck

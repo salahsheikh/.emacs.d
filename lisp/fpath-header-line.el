@@ -16,9 +16,9 @@
   (setq ml-selected-window (selected-window)))
 
 (defun ml-update-all ()
-  (if (derived-mode-p 'prog-mode)
-      (setq left-fringe-width 0)
-    (setq left-fringe-width 8))
+  ;; (if (derived-mode-p 'prog-mode)
+  ;;     (setq left-fringe-width 0)
+  ;;   (setq left-fringe-width 8))
   (setq right-fringe-width 0)
   (force-mode-line-update t))
 

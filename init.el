@@ -10,7 +10,7 @@
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
-(defvar mono-font "Monaco-13" "Default font for programming.")
+(defvar mono-font "Monaco-11" "Default font for programming.")
 (defvar sans-font "DeJaVu Sans-13" "Default font for normal text.")
 (defvar symbol-font "Symbola" "Default font for special symbols.")
 

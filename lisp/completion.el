@@ -1,10 +1,9 @@
-(use-package yasnippet
-  :disabled t
-  :diminish yas-minor-mode
-  :config
-  (use-package yasnippet-snippets)
-  (use-package java-snippets)
-  (yas-global-mode 1))
+;; (use-package yasnippet
+;;   :diminish yas-minor-mode
+;;   :config
+;;   (use-package yasnippet-snippets)
+;;   (use-package java-snippets)
+;;   (yas-global-mode 1))
 
 (use-package lsp-mode 
   :after (evil lsp-java lsp-python-ms)
@@ -15,20 +14,23 @@
   (add-hook 'java-mode-hook #'lsp-deferred))
 
 (use-package company 
-  :after yasnippet
+  ;; :after yasnippet
   :diminish company-mode
   :config
-                                        ;(add-to-list 'company-backends 'company-files)
   (use-package company-lsp 
-    :config
-    (setq company-lsp-enable-snippet t)
-    (setq lsp-enable-snippet t))
+    ;; :config
+    ;; (setq company-lsp-enable-snippet t)
+    ;; (setq lsp-enable-snippet t)
+    )
 
-  (setq-default company-backends '((company-elisp)
+  (setq-default company-backends '((company-capf)
+                                   (company-abbrev company-dabbrev)
+                                   (company-keywords)
+                                   (company-elisp)
                                    (company-files)
                                    (company-lsp)))
 
-  ;; yasnippet specific code
+  ;; ;; yasnippet specific code
   ;; (push '(company-lsp) company-backends)
 
   ;; (defun user/enable-yas-for-backend (backend)
@@ -48,6 +50,7 @@
   (setq company-idle-delay 0.01)
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1)
+  (setq company-tooltip-limit 5)
   (global-company-mode))
 
 (use-package company-flx 

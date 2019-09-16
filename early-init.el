@@ -13,4 +13,6 @@
 
 (setq inhibit-startup-screen t)
 
+(setq evil-want-integration nil)
+
 (add-to-list 'default-frame-alist '(fullscreen . maximized))

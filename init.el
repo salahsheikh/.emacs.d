@@ -10,7 +10,7 @@
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
-(defvar mono-font "Monaco-11" "Default font for programming.")
+(defvar mono-font "Monaco-13" "Default font for programming.")
 (defvar sans-font "DeJaVu Sans-13" "Default font for normal text.")
 (defvar symbol-font "Symbola" "Default font for special symbols.")
 
@@ -45,10 +45,10 @@
 ;; end of packages
 
 ;; core packages
+
 (use-package evil
   :hook (after-init . evil-mode)
   :init
-  (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   :config
   (setq evil-normal-state-tag "🅝")
@@ -371,7 +371,7 @@
 
 (require 'fpath-header-line)
 (require 'c-backspace)
-(require 'better-symbols)
+;(require 'better-symbols)
 
 ;; Wrap lines at 80 characters
 (setq-default fill-column 79)

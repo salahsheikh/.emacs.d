@@ -80,23 +80,28 @@
   :config
   (evil-collection-init))
 
-(use-package git-gutter
-  :diminish git-gutter-mode
-  :config
-  ;; Ignore git status icons. Colors are enough.
-  (setq git-gutter:added-sign " ")
-  (setq git-gutter:deleted-sign " ")
-  (setq git-gutter:modified-sign " ")
-  (setq git-gutter:hide-gutter t)
-  (add-hook 'after-save-hook #'git-gutter:update-all-windows)
-  (progn
-    (set-face-background 'git-gutter:deleted "dark red")
-    (set-face-background 'git-gutter:modified "steel blue")
-    (set-face-background 'git-gutter:added "dark green"))
-  (global-git-gutter-mode))
+;; (use-package git-gutter
+;;   :diminish git-gutter-mode
+;;   :config
+;;   ;; Ignore git status icons. Colors are enough.
+;;   (setq git-gutter:added-sign " ")
+;;   (setq git-gutter:deleted-sign " ")
+;;   (setq git-gutter:modified-sign " ")
+;;   (setq git-gutter:hide-gutter t)
+;;   (add-hook 'after-save-hook #'git-gutter:update-all-windows)
+;;   (progn
+;;     (set-face-background 'git-gutter:deleted "dark red")
+;;     (set-face-background 'git-gutter:modified "steel blue")
+;;     (set-face-background 'git-gutter:added "dark green"))
+;;   (global-git-gutter-mode))
 
-(use-package magit :defer t
-  :after (evil git-gutter)
+(use-package diff-hl
+  :diminish diff-hl-mode
+  :config
+  (global-diff-hl-mode))
+
+(use-package magit
+  :after (evil diff-hl)
   :init
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
@@ -297,7 +302,9 @@
 
 ;; highlight the current line
 (use-package hl-line 
-  :hook (prog-mode . hl-line-mode))
+  :hook (prog-mode . hl-line-mode)
+  :config
+  (setq hl-line-sticky-flag nil))
 
 (blink-cursor-mode 0)
 

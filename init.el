@@ -106,7 +106,7 @@
   (define-key evil-normal-state-map "gs" 'magit-status)
   :config
   (add-hook 'with-editor-mode-hook 'evil-insert-state)
-  (add-hook 'magit-post-refresh-hook #'git-gutter:update-all-windows))
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 
 (use-package evil-magit
   :after magit)

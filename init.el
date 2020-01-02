@@ -399,10 +399,6 @@
 
 (set-face-attribute 'variable-pitch nil :font sans-font)
 
-(use-package symon
-  :config
-  (symon-mode))
-
 (setq-default
  mode-line-mule-info nil
  mode-line-front-space nil

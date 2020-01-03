@@ -218,9 +218,9 @@
   :config
   (global-auto-revert-mode t))
 
-(use-package elec-pair
-  :config
-  (electric-pair-mode +1))
+;; (use-package elec-pair
+;;   :config
+;;   (electric-pair-mode +1))
 
 (use-package which-key
   :diminish which-key-mode
@@ -298,7 +298,7 @@
 (setq c-default-style "linux"
       c-basic-offset 4)
 
-(setq default-frame-alist '((width . 90) (height . 50)))
+;; (setq default-frame-alist '((width . 90) (height . 50)))
 
 ;; highlight the current line
 (use-package hl-line 
@@ -389,7 +389,6 @@
 (set-face-attribute 'mode-line nil :font sans-font)
 
 (window-divider-mode)
-
 
 (when (member sans-font (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")

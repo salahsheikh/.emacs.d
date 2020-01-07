@@ -288,6 +288,11 @@
       (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
       (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume)))
 
+(use-package terminal-toggle
+  :after evil
+  :init
+  (define-key evil-normal-state-map (kbd "C-t") 'terminal-toggle))
+
 ;; end of core packages
 
 ;; ui customization
@@ -429,5 +434,7 @@
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-echo-area-message t)
 (setq initial-scratch-message nil)
+
+(setq use-dialog-box nil)
 
 (setq gc-cons-threshold 262144)

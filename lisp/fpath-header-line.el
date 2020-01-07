@@ -1,9 +1,14 @@
 ;; display nice file path in headerline
-(setq-default header-line-format '(:eval
-                (if (and (not (string-suffix-p "*" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
-                    (if (eq ml-selected-window (selected-window))
-                        (propertize (get-buffer-title) 'face 'mode-line)
-                      (propertize (get-buffer-title) 'face 'mode-line-inactive)) nil)))
+(setq-default header-line-format
+    '(:eval
+    (concat
+        (if (and (not (string-suffix-p "*" (buffer-name))) (not (string-prefix-p "*" (buffer-name))))
+            (if (eq ml-selected-window (selected-window))
+                (propertize (get-buffer-title) 'face 'mode-line)
+            (propertize (get-buffer-title) 'face 'mode-line-inactive)) nil)
+
+        (if (buffer-modified-p)
+            " [UNSAVED]" nil))))
 
 (defun get-buffer-title ()
   (if (buffer-file-name)

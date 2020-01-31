@@ -10,9 +10,15 @@
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
-(defvar mono-font "Inconsolata-15" "Default font for programming.")
+(defvar mono-font "DeJaVu Sans Mono-13" "Default font for programming.")
 (defvar sans-font "DeJaVu Sans-13" "Default font for normal text.")
 (defvar symbol-font "Symbola" "Default font for special symbols.")
+
+(if (version< emacs-version "27.1")
+    (progn 
+      (menu-bar-mode -1)
+      (toggle-scroll-bar -1)
+      (tool-bar-mode -1)))
 
 ;; packages
 (eval-when-compile
@@ -24,8 +30,8 @@
           ("MELPA"        . "https://melpa.org/packages/"))
         package-archive-priorities
         '(("GNU ELPA"     . 10)
-          ("MELPA Stable" . 5)
-          ("MELPA"        . 0)))
+          ("MELPA Stable" . 0)
+          ("MELPA"        . 5)))
   (package-initialize)
 
   (unless (package-installed-p 'use-package)
@@ -74,26 +80,15 @@
              [mouse-4] [down-mouse-4] [drag-mouse-4] [double-mouse-4] [triple-mouse-4]
              [mouse-5] [down-mouse-5] [drag-mouse-5] [double-mouse-5] [triple-mouse-5]))
     (define-key evil-normal-state-map k 'ignore)))
-
+    
+(use-package distinguished-theme
+	:config
+	(load-theme 'distinguished t))
+	
 (use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
-
-;; (use-package git-gutter
-;;   :diminish git-gutter-mode
-;;   :config
-;;   ;; Ignore git status icons. Colors are enough.
-;;   (setq git-gutter:added-sign " ")
-;;   (setq git-gutter:deleted-sign " ")
-;;   (setq git-gutter:modified-sign " ")
-;;   (setq git-gutter:hide-gutter t)
-;;   (add-hook 'after-save-hook #'git-gutter:update-all-windows)
-;;   (progn
-;;     (set-face-background 'git-gutter:deleted "dark red")
-;;     (set-face-background 'git-gutter:modified "steel blue")
-;;     (set-face-background 'git-gutter:added "dark green"))
-;;   (global-git-gutter-mode))
+	:after evil
+	:config
+	(evil-collection-init))
 
 (use-package diff-hl
   :diminish diff-hl-mode
@@ -119,7 +114,7 @@
   (define-key evil-motion-state-map "gc" 'evil-avy-goto-char)
   (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
   (setq avy-background t))
-
+  
 (use-package helm
   :diminish helm-mode
   :init
@@ -191,6 +186,26 @@
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer))
+  
+(use-package projectile
+  :defer t
+  :config
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-enable-caching t)
+  (projectile-global-mode))
+
+(use-package helm-projectile)
+
+(use-package which-key
+  :diminish which-key-mode
+  :config
+  (which-key-mode))
+  
+(use-package terminal-toggle
+  :defer t
+  :after evil
+  :init
+  (define-key evil-normal-state-map (kbd "C-t") 'terminal-toggle))
 
 (use-package switch-window
   :after evil
@@ -218,115 +233,26 @@
   :config
   (global-auto-revert-mode t))
 
-;; (use-package elec-pair
-;;   :config
-;;   (electric-pair-mode +1))
-
-(use-package which-key
-  :diminish which-key-mode
-  :config
-  (which-key-mode))
-
-(use-package projectile
-  :defer t
-  :config
-  (setq projectile-indexing-method 'alien)
-  (setq projectile-enable-caching t)
-  (projectile-global-mode))
-
-(use-package helm-projectile
-  :after helm)
-
-(use-package hide-mode-line
-  :config
-  (add-hook 'neotree-mode-hook #'hide-mode-line-mode))
-
-(use-package expand-region
-  :after evil
-  :config
-  (evil-global-set-key 'normal "ze" 'er/expand-region))
-
-;; (if (not (equal module-file-suffix nil))
-;;     (use-package vterm
-;;       :after evil
-;;       :load-path "~/emacs-libvterm"
-;;       :config
-;;       (add-hook 'vterm-mode-hook
-;;                 (lambda ()
-;;                   (setq-local evil-insert-state-cursor 'box)
-;;                   (evil-insert-state)))
-
-;;       (define-key vterm-mode-map [return]                      #'vterm-send-return)
-
-;;       (setq vterm-keymap-exceptions nil)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
-;;       (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
-;;       (define-key vterm-mode-map (kbd "C-<backspace>") 'vterm-send-meta-backspace)
-;;       (evil-define-key 'normal vterm-mode-map (kbd "C-<backspace>")    #'vterm-send-meta-backspace)
-;;       (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-;;       (evil-define-key 'normal vterm-mode-map (kbd ",c")       #'multi-libvterm)
-;;       (evil-define-key 'normal vterm-mode-map (kbd ",n")       #'multi-libvterm-next)
-;;       (evil-define-key 'normal vterm-mode-map (kbd ",p")       #'multi-libvterm-prev)
-;;       (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
-;;       (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
-;;       (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume)))
-
-(use-package terminal-toggle
-  :defer t
-  :after evil
-  :init
-  (define-key evil-normal-state-map (kbd "C-t") 'terminal-toggle))
-
 ;; end of core packages
 
-;; ui customization
+;; start of ui customization
 (set-face-attribute 'default nil :font mono-font)
-(set-foreground-color "white")
-(set-background-color "black")
 
 (setq c-default-style "linux"
       c-basic-offset 4)
-
-;; (setq default-frame-alist '((width . 90) (height . 50)))
-
+      
 ;; highlight the current line
 (use-package hl-line 
   :hook (prog-mode . hl-line-mode)
   :config
   (setq hl-line-sticky-flag nil))
-
-(blink-cursor-mode 0)
-
-;; prefer vertical splits
-(setq split-width-threshold nil)
-(setq split-height-threshold 0)
-
+  
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (setq visible-bell t)
 (setq ring-bell-function 'ignore)
 
-(use-package paren
-  :config
-  (setq show-paren-delay 0)
-  (show-paren-mode t))
-
+;; visual indentation guides (useful for python)
 (use-package highlight-indent-guides
   :diminish highlight-indent-guides-mode
   :config
@@ -340,20 +266,57 @@
   (setq highlight-indent-guides-method 'column)
   (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
-;; Normal scrolling
+(use-package paren
+  :config
+  (setq show-paren-delay 0)
+  (show-paren-mode t))
+  
+;; Normal scrolling (read: sane scrolling)
 (setq scroll-margin 10
       scroll-step 1
       scroll-conservatively 10000
       scroll-preserve-screen-position 1)
-
-(defun spacemacs//hide-cursor-in-helm-buffer ()
-  "Hide the cursor in helm buffers."
-  (with-helm-buffer
-    (setq cursor-in-non-selected-windows nil)))
-(add-hook 'helm-after-initialize-hook
-          'spacemacs//hide-cursor-in-helm-buffer)
-
 (setq fast-but-imprecise-scrolling t)
+
+(setq frame-resize-pixelwise t)
+
+;; don't wrap
+(set-default 'truncate-lines t)
+
+(add-hook 'after-init-hook #'toggle-truncate-lines)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(add-hook 'markdown-mode-hook #'display-line-numbers-mode)
+
+(require 'fpath-header-line)
+(require 'c-backspace)
+(require 'better-symbols)
+
+
+;; Show line marker at 80 characters
+(setq-default fill-column 79)
+(custom-set-faces
+ `(fill-column-indicator ((t (:foreground "gray30" :family ,symbol-font :height 1.6)))))
+ 
+(if (version<= emacs-version "27.1")
+    ()
+  (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode))
+
+(setq show-trailing-whitespace t)
+(require 'custom-org)
+(setq whitespace-display-mappings
+       ;; all numbers are Unicode codepoint in decimal. try (insert-char 182 ) to see it
+      '((tab-mark 9 [8677 9] [92 9]) ; 9 TAB, 9655 WHITE RIGHT-POINTING TRIANGLE 「▷」
+        ))
+(setq auto-window-vscroll nil)
+(window-divider-mode)
+;; if mouse is clicked on something, leave active minibuffer
+(defun stop-using-minibuffer ()
+  "kill the minibuffer"
+  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
+    (abort-recursive-edit)))
+
+(set-default 'indent-tabs-mode nil)
+(setq-default tab-width 4)
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda()
@@ -362,44 +325,32 @@
 (add-hook 'python-mode-hook
           (lambda()
             (setq mode-name "py")))
+            
+(defun spacemacs//hide-cursor-in-helm-buffer ()
+  "Hide the cursor in helm buffers."
+  (with-helm-buffer
+    (setq cursor-in-non-selected-windows nil)))
+	(add-hook 'helm-after-initialize-hook
+			  'spacemacs//hide-cursor-in-helm-buffer)
+          
+;; prefer vertical splits
+(setq split-width-threshold nil)
+(setq split-height-threshold 0)
 
-(setq frame-resize-pixelwise t)
-
-(set-default 'truncate-lines t)
-(add-hook 'after-init-hook #'toggle-truncate-lines)
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
-(add-hook 'markdown-mode-hook #'display-line-numbers-mode)
-
-(set-default 'indent-tabs-mode nil)
-(setq-default tab-width 4)
-
-;; if mouse is clicked on something, leave active minibuffer
-(defun stop-using-minibuffer ()
-  "kill the minibuffer"
-  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
-    (abort-recursive-edit)))
 
 (add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
 
-(require 'fpath-header-line)
-(require 'c-backspace)
-(require 'better-symbols)
+;; (setq default-frame-alist '((width . 90) (height . 50)))
 
-;; Wrap lines at 80 characters
-(setq-default fill-column 79)
-(custom-set-faces
- `(fill-column-indicator ((t (:foreground "gray30" :family ,symbol-font :height 1.6)))))
-(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+(blink-cursor-mode 0)
 
 (set-face-attribute 'mode-line nil :font sans-font)
 
-(window-divider-mode)
 
 (when (member sans-font (font-family-list))
   (with-current-buffer (get-buffer " *Echo Area 0*")
     (setq-local face-remapping-alist '((default (:family sans-font) variable-pitch)))))
 
-(setq auto-window-vscroll nil)
 
 (set-face-attribute 'variable-pitch nil :font sans-font)
 
@@ -408,13 +359,12 @@
  mode-line-front-space nil
  mode-line-modified nil
  mode-line-remote nil)
-
-(setq whitespace-display-mappings
-       ;; all numbers are Unicode codepoint in decimal. try (insert-char 182 ) to see it
-      '((tab-mark 9 [8677 9] [92 9]) ; 9 TAB, 9655 WHITE RIGHT-POINTING TRIANGLE 「▷」
-        ))
-
-(setq show-trailing-whitespace t)
+ 
+ (use-package expand-region
+  :after evil
+  :config
+  (evil-global-set-key 'normal "ze" 'er/expand-region))
+  
 ;; end of ui customization
 
 ;; utf-8 options
@@ -427,9 +377,6 @@
 (setq-default buffer-file-coding-system 'utf-8-auto-unix)
 
 ;; end of utf-8 options
-
-(require 'custom-org)
-;; end of config
 
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-echo-area-message t)

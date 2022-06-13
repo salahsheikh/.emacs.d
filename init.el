@@ -1,26 +1,8 @@
-(setq file-name-handler-alist-original file-name-handler-alist)
-(setq file-name-handler-alist nil)
-
-(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
-
-(setq create-lockfiles nil)
-(setq custom-file "~/.emacs.d/custom.el")
+(setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
-(defvar mono-font "DeJaVu Sans Mono-13" "Default font for programming.")
-(defvar sans-font "DeJaVu Sans-13" "Default font for normal text.")
-(defvar symbol-font "Symbola" "Default font for special symbols.")
-
-(if (version< emacs-version "27.1")
-    (progn 
-      (menu-bar-mode -1)
-      (toggle-scroll-bar -1)
-      (tool-bar-mode -1)))
-
-;; packages
 (eval-when-compile
   (require 'package)
   (setq package-enable-at-startup nil)
@@ -29,9 +11,9 @@
           ("MELPA Stable" . "https://stable.melpa.org/packages/")
           ("MELPA"        . "https://melpa.org/packages/"))
         package-archive-priorities
-        '(("GNU ELPA"     . 10)
-          ("MELPA Stable" . 0)
-          ("MELPA"        . 5)))
+        '(("GNU ELPA"     . 15)
+          ("MELPA"        . 10)
+          ("MELPA Stable" . 5)))
   (package-initialize)
 
   (unless (package-installed-p 'use-package)
@@ -40,83 +22,70 @@
 
   (setq use-package-always-ensure t)
 
-  (require 'use-package)
-  (use-package diminish
-    :config
-    (eval-after-load "subword" '(diminish 'subword-mode))
-    (eval-after-load "abbrev" '(diminish 'abbrev-mode))
-    (eval-after-load "undo-tree" '(diminish 'undo-tree-mode))
-    (eval-after-load "whitespace" '(diminish 'whitespace-mode))
-    (eval-after-load "eldoc" '(diminish 'eldoc-mode))))
-;; end of packages
+  (require 'use-package))
 
-;; core packages
+(setq auto-mode-case-fold nil)
 
-(use-package evil
-  :hook (after-init . evil-mode)
-  :init
-  (setq evil-want-keybinding nil)
+(fset 'yes-or-no-p 'y-or-n-p)
+
+(mouse-avoidance-mode 'animate)
+
+(setq x-underline-at-descent-line t)
+
+(window-divider-mode)
+
+(set-default 'indent-tabs-mode nil)
+(setq-default tab-width 4)
+
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(setq-default display-fill-column-indicator-column 120)
+(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+(add-hook 'markdown-mode-hook #'display-line-numbers-mode)
+
+(delete-selection-mode t)
+
+(setq scroll-margin 0
+      scroll-preserve-screen-position t
+      next-screen-context-lines 2)
+
+(defun flash-mode-line ()
+  (invert-face 'mode-line)
+  (run-with-timer 0.1 nil #'invert-face 'mode-line))
+(setq visible-bell nil
+      ring-bell-function 'flash-mode-line)
+
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+(setq create-lockfiles nil)
+
+(setq sentence-end-double-space t
+      set-mark-command-repeat-pop t
+
+      view-read-only t
+      view-inhibit-help-message t
+
+      inhibit-compacting-font-caches t)
+
+(setq window-resize-pixelwise t
+      frame-resize-pixelwise t)
+
+(setq x-select-enable-clipboard t)
+
+(setq use-dialog-box nil)
+
+(use-package paren
+  :ensure t
   :config
-  (setq evil-normal-state-tag "🅝")
-  (setq evil-insert-state-tag "🅘")
-  (setq evil-visual-state-tag "🅥")
-  (defun clear-shell()
-    "docstring"
-    (interactive)
-    (if (equal major-mode 'eshell-mode)
-        (progn
-          (let ((inhibit-read-only t))
-            (erase-buffer)
-            (eshell-send-input)))
-      (progn
-        (comint-clear-buffer)))
-    )
-  (evil-ex-define-cmd "clear" #'clear-shell)
-  (add-hook 'org-capture-mode-hook 'evil-insert-state)
-  (dolist (k
-           '([mouse-1] [down-mouse-1] [drag-mouse-1] [double-mouse-1] [triple-mouse-1]
-             [mouse-2] [down-mouse-2] [drag-mouse-2] [double-mouse-2] [triple-mouse-2]
-             [mouse-3] [down-mouse-3] [drag-mouse-3] [double-mouse-3] [triple-mouse-3]
-             [mouse-4] [down-mouse-4] [drag-mouse-4] [double-mouse-4] [triple-mouse-4]
-             [mouse-5] [down-mouse-5] [drag-mouse-5] [double-mouse-5] [triple-mouse-5]))
-    (define-key evil-normal-state-map k 'ignore)))
-    
-(use-package distinguished-theme
-	:config
-	(load-theme 'distinguished t))
-	
-(use-package evil-collection
-	:after evil
-	:config
-	(evil-collection-init))
+  (setq show-paren-delay 0)
+  (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+  (set-face-attribute 'show-paren-mismatch nil :weight 'extra-bold)  
+  (show-paren-mode t))
 
-(use-package diff-hl
-  :diminish diff-hl-mode
+(use-package shackle
   :config
-  (global-diff-hl-mode))
+  (shackle-mode))
 
-(use-package magit
-  :after (evil diff-hl)
-  :init
-  (define-key evil-normal-state-map "gs" 'magit-status)
-  :config
-  (add-hook 'with-editor-mode-hook 'evil-insert-state)
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
-
-(use-package evil-magit
-  :after magit)
-
-(use-package avy
-  :after (evil evil-collection)
-  :config
-  (define-key evil-motion-state-map "gl" 'evil-avy-goto-line)
-  (define-key evil-normal-state-map "gl" 'evil-avy-goto-line)
-  (define-key evil-motion-state-map "gc" 'evil-avy-goto-char)
-  (define-key evil-normal-state-map "gc" 'evil-avy-goto-char)
-  (setq avy-background t))
-  
 (use-package helm
-  :diminish helm-mode
   :init
   (setq helm-M-x-fuzzy-match t
         helm-mode-fuzzy-match t
@@ -128,28 +97,26 @@
         helm-completion-in-region-fuzzy-match t
         helm-follow-mode-persistent t
         helm-quick-update t
-        helm-candidate-number-list 150
+        helm-candidate-number-list 20
+        helm-candidate-number-limit 20
         helm-split-window-in-side-p t
         helm-move-to-line-cycle-in-source t
         helm-echo-input-in-header-line t
         helm-ff-skip-boring-files t
-        helm-autoresize-max-height 0
-        helm-autoresize-min-height 20)
+        helm-autoresize-max-height 20)
   :config
   (defun helm-dashboard()
-    "Author: MikeTheTall"
-    (if (< (length command-line-args) 2)
-        (let ((helm-full-frame-orig helm-full-frame)
-              (helm-mini-default-sources-orig helm-mini-default-sources))
-          (setq helm-full-frame t)
-          (setq helm-mini-default-sources `(helm-source-bookmarks
-                                            helm-source-recentf
-                                            helm-source-projectile-projects))
-          (helm-mini)
-          (setq helm-mini-default-sources helm-mini-default-sources-orig)
-          (setq helm-full-frame helm-full-frame-orig))))
-  (add-hook 'after-init-hook #'helm-dashboard)
-  (setq helm-candidate-number-limit 100)
+    (when (display-graphic-p)
+      (let ((helm-full-frame-orig helm-full-frame)
+            (helm-mini-default-sources-orig helm-mini-default-sources))
+        (setq helm-full-frame t)
+        (setq helm-mini-default-sources `(helm-source-bookmarks
+                                          helm-source-recentf))
+        (helm-mini)
+        (setq helm-mini-default-sources helm-mini-default-sources-orig)
+        (setq helm-full-frame helm-full-frame-orig))))
+  (add-hook 'emacs-startup-hook #'helm-dashboard)
+
   (global-set-key (kbd "M-x") #'helm-M-x)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
   (global-set-key (kbd "C-x C-b") #'helm-buffers-list)
@@ -167,15 +134,12 @@
   (advice-add #'helm-preselect :around #'helm-skip-dots)
   (advice-add #'helm-ff-move-to-first-real-candidate :around #'helm-skip-dots)
   (define-key helm-map [escape] 'helm-keyboard-quit)
+
   (helm-autoresize-mode 1)
   (helm-adaptive-mode 1)
 
-  ;; hide helm modeline
-  ;;(defun helm-display-mode-line (source &optional force)
-  ;; (setq mode-line-format " "))
-  (helm-mode 1))
+  (helm-mode))
 
-;; fuzzier matching for helm
 (use-package helm-flx
   :after helm
   :config
@@ -186,203 +150,158 @@
   :bind ("C-s" . swiper-helm)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer))
-  
+
 (use-package projectile
-  :defer t
+  :ensure t
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
   :config
-  (setq projectile-indexing-method 'alien)
+  (setq projectile-project-search-path '("~"))
+  (setq projectile-indexing-method 'native)
   (setq projectile-enable-caching t)
   (projectile-global-mode))
 
-(use-package helm-projectile)
+(use-package helm-projectile
+  :after projectile)
 
-(use-package which-key
-  :diminish which-key-mode
-  :config
-  (which-key-mode))
-  
-(use-package terminal-toggle
-  :defer t
-  :after evil
-  :init
-  (define-key evil-normal-state-map (kbd "C-t") 'terminal-toggle))
-
-(use-package switch-window
-  :after evil
-  :config
-  (define-advice switch-window (:around (fun &rest r) cursor-stuff)
-    (progn
-      (let ((cursor-in-non-selected-windows nil))
-        (apply fun r))))
-  (setq switch-window-shortcut-style 'qwerty)
-  (setq switch-window-multiple-frames t)
-  (evil-global-set-key 'normal "\C-w\C-w" 'switch-window))
-
-(use-package drag-stuff
-  :diminish drag-stuff-mode
-  :bind (("M-<down>" . drag-stuff-down)
-         ("M-<up>" . drag-stuff-up)
-         ("M-<left>" . drag-stuff-left)
-         ("M-<right>" . drag-stuff-right))
-  :config
-  (drag-stuff-global-mode))
-
-(require 'completion)
-
-(use-package autorevert
-  :config
-  (global-auto-revert-mode t))
-
-;; end of core packages
-
-;; start of ui customization
-(set-face-attribute 'default nil :font mono-font)
-
-(setq c-default-style "linux"
-      c-basic-offset 4)
-      
-;; highlight the current line
-(use-package hl-line 
-  :hook (prog-mode . hl-line-mode)
+(use-package hl-line
+  :hook ((prog-mode . hl-line-mode)
+         (dired-mode . hl-line-mode))
   :config
   (setq hl-line-sticky-flag nil))
-  
-(fset 'yes-or-no-p 'y-or-n-p)
 
-(setq visible-bell t)
-(setq ring-bell-function 'ignore)
+(use-package magit)
 
-;; visual indentation guides (useful for python)
-(use-package highlight-indent-guides
-  :diminish highlight-indent-guides-mode
-  :config
-  (defun my-highlighter (level response display)
-    (if (> 1 level)
-        nil
-      (highlight-indent-guides--highlighter-default level response display)))
+(require 'tramp)
 
-  (setq highlight-indent-guides-highlighter-function 'my-highlighter)
-
-  (setq highlight-indent-guides-method 'column)
-  (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
-
-(use-package paren
-  :config
-  (setq show-paren-delay 0)
-  (show-paren-mode t))
-  
-;; Normal scrolling (read: sane scrolling)
-(setq scroll-margin 10
-      scroll-step 1
-      scroll-conservatively 10000
-      scroll-preserve-screen-position 1)
-(setq fast-but-imprecise-scrolling t)
-
-(setq frame-resize-pixelwise t)
-
-;; don't wrap
-(set-default 'truncate-lines t)
-
-(add-hook 'after-init-hook #'toggle-truncate-lines)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(add-hook 'markdown-mode-hook #'display-line-numbers-mode)
+(put 'erase-buffer 'disabled nil)
 
 (require 'fpath-header-line)
-(require 'c-backspace)
-(require 'better-symbols)
 
+(set-face-foreground 'font-lock-constant-face "Aquamarine3")
+(set-face-foreground 'font-lock-keyword-face "SteelBlue3")
+(set-face-foreground 'font-lock-type-face "PaleGreen3")
 
-;; Show line marker at 80 characters
-(setq-default fill-column 79)
-(custom-set-faces
- `(fill-column-indicator ((t (:foreground "gray30" :family ,symbol-font :height 1.6)))))
- 
-(if (version<= emacs-version "27.1")
-    ()
-  (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode))
-
-(setq show-trailing-whitespace t)
-(require 'custom-org)
-(setq whitespace-display-mappings
-       ;; all numbers are Unicode codepoint in decimal. try (insert-char 182 ) to see it
-      '((tab-mark 9 [8677 9] [92 9]) ; 9 TAB, 9655 WHITE RIGHT-POINTING TRIANGLE 「▷」
-        ))
-(setq auto-window-vscroll nil)
-(window-divider-mode)
-;; if mouse is clicked on something, leave active minibuffer
-(defun stop-using-minibuffer ()
-  "kill the minibuffer"
-  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
-    (abort-recursive-edit)))
-
-(set-default 'indent-tabs-mode nil)
-(setq-default tab-width 4)
-
-(add-hook 'emacs-lisp-mode-hook
-          (lambda()
-            (setq mode-name "elisp")))
-
-(add-hook 'python-mode-hook
-          (lambda()
-            (setq mode-name "py")))
-            
-(defun spacemacs//hide-cursor-in-helm-buffer ()
-  "Hide the cursor in helm buffers."
-  (with-helm-buffer
-    (setq cursor-in-non-selected-windows nil)))
-	(add-hook 'helm-after-initialize-hook
-			  'spacemacs//hide-cursor-in-helm-buffer)
-          
-;; prefer vertical splits
-(setq split-width-threshold nil)
-(setq split-height-threshold 0)
-
-
-(add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
-
-;; (setq default-frame-alist '((width . 90) (height . 50)))
-
-(blink-cursor-mode 0)
-
-(set-face-attribute 'mode-line nil :font sans-font)
-
-
-(when (member sans-font (font-family-list))
-  (with-current-buffer (get-buffer " *Echo Area 0*")
-    (setq-local face-remapping-alist '((default (:family sans-font) variable-pitch)))))
-
-
-(set-face-attribute 'variable-pitch nil :font sans-font)
-
-(setq-default
- mode-line-mule-info nil
- mode-line-front-space nil
- mode-line-modified nil
- mode-line-remote nil)
- 
- (use-package expand-region
-  :after evil
+(use-package clang-format
   :config
-  (evil-global-set-key 'normal "ze" 'er/expand-region))
+  (setq-default clang-format-style "file")
+  (defun clang-format-save-hook-for-this-buffer ()
+    "Create a buffer local save hook."
+    (add-hook 'before-save-hook
+              (lambda ()
+                (when (locate-dominating-file "." ".clang-format")
+                  (clang-format-buffer))
+                nil)
+              nil
+              t))
+
+  (add-hook 'c++-mode-hook (lambda () (clang-format-save-hook-for-this-buffer))))
+
+(use-package subword
+  :init (global-subword-mode +1))
+
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
+
+(setq-default cursor-in-non-selected-windows nil)
+(setq-default highlight-nonselected-windows nil)
+
+(setq fast-but-imprecise-scrolling t)
+
+(setq-default indicate-empty-lines t)
+
+(setq font-lock-maximum-decoration t
+      color-theme-is-global t
+      truncate-partial-width-windows nil)
+
+(setq redisplay-dont-pause t)
+
+(when window-system
+  (setq frame-title-format '(buffer-file-name "%f" ("%b")))
+  (when (bound-and-true-p tooltip-mode)
+    (tooltip-mode -1))  
+  (blink-cursor-mode -1))
+
+(setq enable-recursive-minibuffers t)
+(setq echo-keystrokes 0.02)
+
+(setq ansi-color-for-comint-mode t)
+
+(setq-default display-line-numbers-width 3)
+(setq-default display-line-numbers-widen t)
+
+(setq frame-inhibit-implied-resize t)
+(setq inhibit-x-resources nil)
+
+(setq split-width-threshold 160
+      split-height-threshold nil)
+
+(setq inhibit-startup-screen t
+      inhibit-startup-echo-area-message t
+      initial-scratch-message nil
+      inhibit-default-init t
+      initial-major-mode 'fundamental-mode)
+
+(setq idle-update-delay 1.0)
+
+(setq inhibit-compacting-font-caches t)
+
+(setq redisplay-skip-fontification-on-input t)
+
+(setq hscroll-margin 2
+      hscroll-step 1
+      ;; Emacs spends too much effort recentering the screen if you scroll the
+      ;; cursor more than N lines past window edges (where N is the settings of
+      ;; `scroll-conservatively'). This is especially slow in larger files
+      ;; during large-scale scrolling commands. If kept over 100, the window is
+      ;; never automatically recentered.
+      scroll-conservatively 101
+      scroll-margin 0
+      scroll-preserve-screen-position t
+      ;; Reduce cursor lag by a tiny bit by not auto-adjusting `window-vscroll'
+      ;; for tall lines.
+      auto-window-vscroll nil
+      ;; mouse
+      mouse-wheel-scroll-amount '(2 ((shift) . hscroll))
+      mouse-wheel-scroll-amount-horizontal 2)
+
+(use-package diff-hl
+  :after magit
+  :config
+  (global-diff-hl-mode t))
+
+(use-package ace-window
+  :ensure t
+  :init
+  (ace-window-display-mode t)
+  (setq aw-display-mode-overlay nil)
+
+  (defvar ss/cursor-type-holder)
   
-;; end of ui customization
+  (defun ss/hide-frills (orig-fun &rest args)
+    (show-paren-mode -1)
+    (hl-line-mode -1)
+    (let ((original-cursor-type (symbol-value 'cursor-type)))
+      (setq ss/cursor-type-holder original-cursor-type)
+      ;; (setq cursor-type nil)
+      (message (prin1-to-string original-cursor-type))
+      (apply orig-fun args)
+      (show-paren-mode t)
+      (hl-line-mode t)
+      ;; (setq cursor-type original-cursor-type)
+      ))
 
-;; utf-8 options
-(set-language-environment 'utf-8)
-(setq locale-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
+  (advice-add 'ace-window :around #'ss/hide-frills)
 
-;; Treat clipboard input as UTF-8 string first; compound text next, etc.
-(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-(setq-default buffer-file-coding-system 'utf-8-auto-unix)
+  (defun ss/restore-frills ()
+    (when (eq major-mode 'ace-window-mode)
+      (setq cursor-type ss/cursor-type-holder)))
 
-;; end of utf-8 options
+  (add-hook 'change-major-mode-hook #'ss/restore-frills)  
+  
+  (progn (global-set-key (kbd "C-x o") 'ace-window)))
 
-(setq inhibit-startup-screen t)
-(setq inhibit-startup-echo-area-message t)
-(setq initial-scratch-message nil)
-
-(setq use-dialog-box nil)
-
-(setq gc-cons-threshold 262144)
-(put 'erase-buffer 'disabled nil)
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 2)
+(setq indent-line-function 'insert-tab)
